@@ -353,6 +353,25 @@ tbody tr:last-child td{border-bottom:0}.log-cancelled{opacity:.38;background:#fa
   font-size:11px;
 }
 
+.consult-loading{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  min-height:42px;
+  color:var(--muted);
+  font-size:12px;
+}
+.consult-spinner{
+  width:15px;
+  height:15px;
+  flex:0 0 15px;
+  border:2px solid #eaecf0;
+  border-top-color:#667085;
+  border-radius:50%;
+  animation:consultSpin .8s linear infinite;
+}
+@keyframes consultSpin{to{transform:rotate(360deg)}}
+
 .existing-booking{
   margin-top:10px;
   padding:11px 12px;
@@ -2057,6 +2076,24 @@ function renderConsultationLog() {
 // CONSULTATION
 // -----------------------------------------------------------------------------
 
+function setConsultationLoadingState(isLoading) {
+  const select = document.getElementById('bookingDate');
+  const slots = document.getElementById('slotArea');
+  if (!select || !slots) return;
+
+  if (isLoading) {
+    select.disabled = true;
+    select.innerHTML = '<option value="">Memuat jadwal...</option>';
+    slots.innerHTML = `
+      <div class="consult-loading">
+        <span class="consult-spinner" aria-hidden="true"></span>
+        <span>Memuat jadwal konsultasi yang masih tersedia...</span>
+      </div>`;
+  } else {
+    select.disabled = false;
+  }
+}
+
 async function setConsult(value) {
   if (booking) {
     consultationRequired = true;
@@ -2071,8 +2108,10 @@ async function setConsult(value) {
   document.getElementById('bookingArea').classList.toggle('hidden', value !== true);
 
   if (value === true) {
+    setConsultationLoadingState(true);
     await loadConsultationAvailability();
   } else {
+    document.getElementById('bookingDate').disabled = false;
     document.getElementById('bookingDate').innerHTML = '<option value="">Pilih tanggal</option>';
     document.getElementById('slotArea').innerHTML = '<span style="color:var(--muted);font-size:12px">Pilih tanggal terlebih dahulu.</span>';
   }
@@ -2086,6 +2125,15 @@ async function loadConsultationAvailability() {
     renderInstitutionBookingState();
     renderConsultationDates();
   } catch (err) {
+    const select = document.getElementById('bookingDate');
+    const slots = document.getElementById('slotArea');
+    if (select) {
+      select.disabled = true;
+      select.innerHTML = '<option value="">Jadwal belum dapat dimuat</option>';
+    }
+    if (slots) {
+      slots.innerHTML = '<span style="color:var(--brand);font-size:12px">Jadwal belum dapat dimuat. Silakan coba kembali.</span>';
+    }
     showError(err.message);
   }
 }
@@ -2119,9 +2167,31 @@ function renderInstitutionBookingState() {
 
 function renderConsultationDates() {
   const select = document.getElementById('bookingDate');
-  if (!select || !availability) return;
-  select.innerHTML = '<option value="">Pilih tanggal</option>' + (availability.dates || []).map(d => `<option value="${escAttr(d.date)}">${esc(d.label)}</option>`).join('');
-  document.getElementById('slotArea').innerHTML = '<span style="color:var(--muted);font-size:12px">Pilih tanggal terlebih dahulu.</span>';
+  const slots = document.getElementById('slotArea');
+  if (!select || !slots || !availability) return;
+
+  const dates = availability.dates || [];
+  select.disabled = false;
+
+  if (!dates.length) {
+    select.disabled = true;
+    select.innerHTML = '<option value="">Tidak ada jadwal tersedia</option>';
+    slots.innerHTML = '<span style="color:var(--muted);font-size:12px">Belum ada sesi konsultasi yang masih tersedia.</span>';
+    return;
+  }
+
+  if (dates.length === 1) {
+    select.innerHTML = `<option value="${escAttr(dates[0].date)}">${esc(dates[0].label)}</option>`;
+    select.value = dates[0].date;
+    renderSlots();
+    return;
+  }
+
+  select.innerHTML =
+    '<option value="">Pilih tanggal</option>' +
+    dates.map(d => `<option value="${escAttr(d.date)}">${esc(d.label)}</option>`).join('');
+
+  slots.innerHTML = '<span style="color:var(--muted);font-size:12px">Pilih tanggal untuk melihat waktu yang tersedia.</span>';
 }
 
 function renderSlots() {
@@ -2133,7 +2203,16 @@ function renderSlots() {
     return;
   }
   const d = availability.dates.find(x => x.date === date);
-  if (!d) return;
+  if (!d) {
+    root.innerHTML = '<span style="color:var(--muted);font-size:12px">Jadwal tidak ditemukan.</span>';
+    return;
+  }
+
+  if (!d.sessions?.length) {
+    root.innerHTML = '<span style="color:var(--muted);font-size:12px">Tidak ada sesi yang masih tersedia pada tanggal ini.</span>';
+    return;
+  }
+
   root.innerHTML = d.sessions.map(s => {
     const disabled = s.remaining <= 0;
     return `<button type="button" class="slot-card ${disabled ? 'disabled' : ''}" ${disabled ? 'disabled' : ''} onclick="selectConsultationSlot('${jsEsc(s.sessionId)}',this)"><span class="slot-time">${esc(s.start)}–${esc(s.end)}</span><span class="slot-capacity">${fmt(s.booked)}/${fmt(s.total)}</span></button>`;

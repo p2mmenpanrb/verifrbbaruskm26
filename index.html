@@ -202,6 +202,42 @@ tbody tr:last-child td{border-bottom:0}.log-cancelled{opacity:.38;background:#fa
   font-weight:650;
 }
 
+
+.data-update-cue{
+  margin-top:14px;
+  padding:10px 12px;
+  border:1px solid #d0d5dd;
+  border-radius:10px;
+  background:#f9fafb;
+  display:flex;
+  gap:9px;
+  align-items:flex-start;
+}
+.data-update-cue .cue-icon{
+  width:22px;
+  height:22px;
+  flex:0 0 22px;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  background:#eaecf0;
+  color:#475467;
+  font-size:12px;
+  font-weight:750;
+}
+.data-update-cue .cue-title{
+  font-size:12px;
+  line-height:1.35;
+  color:#344054;
+  font-weight:700;
+}
+.data-update-cue .cue-help{
+  margin-top:2px;
+  font-size:11px;
+  line-height:1.45;
+  color:#667085;
+}
+
 @media(max-width:950px){
     
   .topbar{display:block}.mode-switch{margin-top:16px}
@@ -749,6 +785,16 @@ tbody tr:last-child td{border-bottom:0}.log-cancelled{opacity:.38;background:#fa
       </div>
       <span id="accessPill" class="pill">—</span>
     </section>
+    <div id="dataUpdateCue" class="data-update-cue">
+      <div class="cue-icon">i</div>
+      <div>
+        <div id="dataUpdateTitle" class="cue-title">Data terakhir diperbarui: —</div>
+        <div class="cue-help">
+          Status Penanggung Jawab dan usulan pada halaman mengikuti pembaruan data tersebut.
+        </div>
+      </div>
+    </div>
+
 
     <!-- INSTITUTION MODE -->
     <div id="institutionMode">
@@ -1024,6 +1070,7 @@ tbody tr:last-child td{border-bottom:0}.log-cancelled{opacity:.38;background:#fa
             <h3>Ringkasan data</h3>
             <div class="sub">Data yang sedang dibahas dengan instansi.</div>
             <div class="source-list">
+              <div class="source-item"><span>Data terakhir diperbarui</span><strong id="srcLastUpdated">—</strong></div>
               <div class="source-item"><span>Total upload bulk/offline</span><strong id="srcUploads">0</strong></div>
               
               <div class="source-item"><span>PJ disetujui seluruhnya</span><strong id="srcApproved">0</strong></div>
@@ -1235,15 +1282,68 @@ async function apiGet(action, params = {}) {
     Object.entries(params).filter(([,v]) => v !== undefined && v !== null && v !== '')
   )});
 
-  const res = await fetch(`${API_URL}?${qs.toString()}`, {
-    method: 'GET',
-    headers: { 'Accept': 'application/json' },
-    cache: 'no-store'
-  });
+  const url = `${API_URL}?${qs.toString()}`;
+  const maxAttempts = 3;
+  const retryableStatus = new Set([502, 503, 504]);
 
-  const json = await res.json().catch(() => ({}));
-  if (!res.ok || !json.ok) throw apiErrorFrom_(json, res.status);
-  return json.data;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const res = await fetch(url, {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' },
+        cache: 'no-store'
+      });
+
+      const json = await res.json().catch(() => ({}));
+
+      if (res.ok && json.ok) {
+        return json.data;
+      }
+
+      const err = apiErrorFrom_(json, res.status);
+      err.httpStatus = res.status;
+
+      if (retryableStatus.has(res.status) && attempt < maxAttempts) {
+        if (document.getElementById('loadingOverlay') &&
+            !document.getElementById('loadingOverlay').classList.contains('is-hidden')) {
+          setLoadingProgress(
+            Math.max(loadingProgressValue, 72),
+            'Menghubungkan kembali ke sumber data'
+          );
+        }
+
+        await new Promise(r => setTimeout(r, attempt === 1 ? 900 : 1800));
+        continue;
+      }
+
+      throw err;
+
+    } catch (err) {
+      const networkFailure =
+        err instanceof TypeError ||
+        err?.name === 'TypeError';
+
+      const retryableHttp =
+        retryableStatus.has(Number(err?.httpStatus));
+
+      if ((networkFailure || retryableHttp) && attempt < maxAttempts) {
+        if (document.getElementById('loadingOverlay') &&
+            !document.getElementById('loadingOverlay').classList.contains('is-hidden')) {
+          setLoadingProgress(
+            Math.max(loadingProgressValue, 72),
+            'Menghubungkan kembali ke sumber data'
+          );
+        }
+
+        await new Promise(r => setTimeout(r, attempt === 1 ? 900 : 1800));
+        continue;
+      }
+
+      throw err;
+    }
+  }
+
+  throw new Error('Sumber data belum dapat dihubungi. Silakan coba kembali.');
 }
 
 async function apiPost(action, payload = {}) {
@@ -1547,7 +1647,7 @@ async function loadSelectedInstitution() {
       institutionId: inst.institutionId,
       mode: mode === 'internal' ? 'INTERNAL' : 'INSTITUTION',
       browserSessionId,
-      track: mode === 'institution' ? '1' : '0'
+      track: '0'
     });
 
     applyInstitutionPayload(data);
@@ -1560,6 +1660,20 @@ async function loadSelectedInstitution() {
       document.getElementById('institutionMode').classList.remove('hidden');
       document.getElementById('institutionPublicWorkspace')?.classList.remove('hidden');
       document.getElementById('internalMode').classList.add('hidden');
+
+      // Record access only AFTER the institution data is already visible.
+      // Do not await: access telemetry must never block the user.
+      apiPost('trackAccess', {
+        institutionId: inst.institutionId,
+        browserSessionId
+      }).then(result => {
+        if (result?.accessLog && internalData) {
+          internalData.accessLog = result.accessLog;
+          renderInstitutionAccessLog();
+        }
+      }).catch(() => {
+        // Access telemetry is non-critical. Ignore transient failure.
+      });
     }
   } catch (err) {
     if (
@@ -1583,6 +1697,19 @@ function applyInstitutionPayload(data) {
   booking = data.booking || null;
   config = data.config || config;
   internalData = data;
+
+  const sourceLastUpdated = data?.config?.sourceLastUpdatedAt || 'Belum tersedia';
+
+  const updateTitle = document.getElementById('dataUpdateTitle');
+  if (updateTitle) {
+    updateTitle.textContent =
+      `Data terakhir diperbarui: ${sourceLastUpdated}`;
+  }
+
+  const internalUpdated = document.getElementById('srcLastUpdated');
+  if (internalUpdated) {
+    internalUpdated.textContent = sourceLastUpdated;
+  }
 
   document.getElementById('institutionName').textContent = session.name;
   document.getElementById('institutionStatusText').textContent = 'Status akses: ' + (session.statusAkses || '—');

@@ -126,10 +126,27 @@ tbody tr:last-child td{border-bottom:0}.log-cancelled{opacity:.38;background:#fa
 .source-list{display:grid;gap:7px}.source-item{display:flex;justify-content:space-between;gap:10px;font-size:11px;padding:6px 0;border-bottom:1px solid var(--line)}.source-item:last-child{border-bottom:0}.source-item span:first-child{color:var(--muted)}
 
 .logs{margin-top:30px;padding-top:22px;border-top:1px solid var(--line)}
-.logs details{border-bottom:1px solid var(--line)}.logs summary{cursor:pointer;padding:11px 0;font-weight:650;list-style:none}
-.logs summary::-webkit-details-marker{display:none}.log-content{padding:0 0 12px}
+.logs details{border-bottom:1px solid var(--line)}
+.logs summary{
+  cursor:pointer;padding:11px 0;font-weight:650;list-style:none;
+  display:flex;align-items:center;justify-content:space-between;gap:12px
+}
+.logs summary::-webkit-details-marker{display:none}
+.logs summary::after{
+  content:"Buka detail  ›";flex:0 0 auto;padding:5px 9px;
+  border:1px solid var(--line);border-radius:999px;background:#fff;
+  color:var(--muted);font-size:10px;font-weight:700;letter-spacing:.01em
+}
+.logs details[open] summary::after{content:"Tutup ⌄";background:#f7f7f7;color:var(--text)}
+.logs summary:hover::after{border-color:#b8b8b8;color:var(--text)}
+.log-content{padding:0 0 12px}
 .log-table{width:100%;border-collapse:collapse;font-size:11px}.log-table th,.log-table td{text-align:left;padding:8px;border-bottom:1px solid var(--line)}
 .log-table th{background:#f9fafb;color:#475467}.log-table td{color:#667085}
+.history-helper{
+  margin:14px 0 8px;padding:10px 12px;border:1px solid var(--line);
+  border-radius:10px;background:#fafafa;font-size:11px;line-height:1.55;color:var(--muted)
+}
+.history-helper strong{color:var(--text)}
 
 .modal-wrap{position:fixed;inset:0;background:rgba(16,24,40,.3);display:grid;place-items:center;padding:18px;z-index:100}
 .modal{width:min(580px,100%);max-height:90vh;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 24px 48px rgba(16,24,40,.14);padding:21px}
@@ -950,8 +967,13 @@ tbody tr:last-child td{border-bottom:0}.log-cancelled{opacity:.38;background:#fa
             </div>
           </div>
           <div class="consult-info full">
-            Durasi sesi <strong>20 menit</strong> dengan jeda <strong>10 menit</strong>.
-            Tersedia <strong>6 breakout room × 4 instansi</strong>. Breakout room ditentukan otomatis.
+            <strong>Ketentuan konsultasi</strong><br>
+            • Setiap instansi dapat melakukan <strong>1 kali pemesanan jadwal konsultasi</strong>.<br>
+            • Setiap instansi dapat diwakili oleh <strong>maksimal 2 orang</strong> dalam sesi Zoom.<br>
+            • Saat bergabung ke Zoom, gunakan format nama <strong>Nama_Asal Instansi</strong>
+              (contoh: <strong>Andi_Kabupaten Sleman</strong>).<br>
+            • Mohon bergabung ke Zoom <strong>paling lambat 15 menit sebelum sesi dimulai</strong>.<br>
+            • Kapasitas setiap sesi menyesuaikan breakout room yang tersedia dan breakout room ditentukan otomatis.
           </div>
         </div>
       </div>
@@ -960,7 +982,21 @@ tbody tr:last-child td{border-bottom:0}.log-cancelled{opacity:.38;background:#fa
         <div class="submit"><button class="btn btn-primary" onclick="openConfirm()">Kirim klarifikasi</button></div>
       </section>
 
+      <div class="history-helper">
+        <strong>Lihat informasi sebelumnya</strong><br>
+        Klik <strong>Buka detail</strong> pada bagian di bawah untuk melihat jadwal konsultasi, riwayat klarifikasi, atau riwayat akses portal.
+      </div>
+
       <section class="logs">
+        <details id="consultationLog">
+          <summary>Jadwal konsultasi</summary>
+          <div class="log-content">
+            <div id="consultationLogBody" style="font-size:12px;color:var(--text)">
+              Belum ada jadwal konsultasi.
+            </div>
+          </div>
+        </details>
+
         <details id="clarificationLog">
           <summary>Riwayat klarifikasi</summary>
           <div class="log-content">
@@ -1774,6 +1810,7 @@ function renderAll() {
   renderClarificationHistory();
   renderInstitutionAccessLog();
   renderInstitutionBookingState();
+  renderConsultationLog();
   renderInternal();
 }
 
@@ -1981,6 +2018,41 @@ function renderInstitutionAccessLog() {
   body.innerHTML = `<tr><td>${esc(log.first || '—')}</td><td>${esc(log.last || '—')}</td><td>${fmt(log.count || 0)}</td><td>Akses terdeteksi</td></tr>`;
 }
 
+function renderConsultationLog() {
+  const root = document.getElementById('consultationLogBody');
+  if (!root) return;
+
+  if (!booking) {
+    root.innerHTML = '<div style="color:var(--muted)">Belum ada jadwal konsultasi yang dipesan.</div>';
+    return;
+  }
+
+  const zoomLink = config.zoomUrl
+    ? `<a href="${escAttr(config.zoomUrl)}" target="_blank" rel="noopener">Buka Zoom Meeting</a>`
+    : '';
+
+  root.innerHTML = `
+    <div style="display:grid;gap:9px">
+      <div>
+        <strong>Konsultasi sudah dijadwalkan</strong><br>
+        ${esc(booking.dateLabel)}, ${esc(booking.start)}–${esc(booking.end)} WIB · Breakout ${esc(booking.room)}
+      </div>
+      <div style="color:var(--muted);line-height:1.65">
+        <strong style="color:var(--text)">Ketentuan kehadiran</strong><br>
+        Maksimal <strong>2 orang</strong> per instansi.<br>
+        Gunakan format nama Zoom: <strong>Nama_Asal Instansi</strong>.<br>
+        Mohon bergabung ke Zoom <strong>paling lambat 15 menit sebelum sesi dimulai</strong>.
+      </div>
+      <div style="line-height:1.65">
+        <strong>Zoom konsultasi</strong><br>
+        Meeting ID: ${esc(config.zoomMeetingId || '—')}<br>
+        Passcode: ${esc(config.zoomPasscode || '—')}<br>
+        ${zoomLink}
+      </div>
+    </div>
+  `;
+}
+
 // -----------------------------------------------------------------------------
 // CONSULTATION
 // -----------------------------------------------------------------------------
@@ -2029,7 +2101,13 @@ function renderInstitutionBookingState() {
     row.classList.add('hidden');
     area.classList.add('hidden');
     box.classList.remove('hidden');
-    box.innerHTML = `<strong>Konsultasi sudah dijadwalkan</strong>${esc(booking.dateLabel)}, ${esc(booking.start)}–${esc(booking.end)} WIB · Breakout ${esc(booking.room)}`;
+    box.innerHTML = `<strong>Konsultasi sudah dijadwalkan</strong>
+      ${esc(booking.dateLabel)}, ${esc(booking.start)}–${esc(booking.end)} WIB · Breakout ${esc(booking.room)}
+      <div style="margin-top:7px;font-size:11px;line-height:1.55;color:var(--muted)">
+        Maksimal <strong>2 orang</strong> per instansi. Saat bergabung ke Zoom, gunakan format nama
+        <strong>Nama_Asal Instansi</strong>.<br>
+        Mohon bergabung <strong>paling lambat 15 menit sebelum sesi dimulai</strong>.
+      </div>`;
   } else {
     box.classList.add('hidden');
     row.classList.remove('hidden');
@@ -2108,7 +2186,15 @@ function openConfirm() {
 
 function renderZoomBox() {
   const zoom = document.getElementById('zoom');
-  zoom.innerHTML = `<strong>Zoom konsultasi</strong><br>Meeting ID: ${esc(config.zoomMeetingId || '')}<br>Passcode: ${esc(config.zoomPasscode || '')}<br>${config.zoomUrl ? `<a href="${escAttr(config.zoomUrl)}" target="_blank" rel="noopener">Buka Zoom Meeting</a>` : ''}`;
+  zoom.innerHTML = `<strong>Zoom konsultasi</strong><br>
+    Meeting ID: ${esc(config.zoomMeetingId || '')}<br>
+    Passcode: ${esc(config.zoomPasscode || '')}<br>
+    ${config.zoomUrl ? `<a href="${escAttr(config.zoomUrl)}" target="_blank" rel="noopener">Buka Zoom Meeting</a><br>` : ''}
+    <span style="display:inline-block;margin-top:7px;font-size:11px;line-height:1.55">
+      Maksimal <strong>2 orang</strong> per instansi. Gunakan format nama Zoom:
+      <strong>Nama_Asal Instansi</strong>.<br>
+      Mohon bergabung <strong>paling lambat 15 menit sebelum sesi dimulai</strong>.
+    </span>`;
 }
 
 function findSelectedAvailabilitySession(sessionId) {
@@ -2134,6 +2220,7 @@ async function submitClarification() {
         sessionId: selectedSessionId,
         createdBy: 'INSTITUTION'
       });
+      renderConsultationLog();
     }
 
     await apiPost('submitClarification', {
@@ -2213,10 +2300,11 @@ function renderInternalLandingSchedule() {
     const roomHtml = Array.from({ length:roomCount }, (_, idx) => {
       const roomNo = idx + 1;
       const cells = d.sessions.map(ses => {
-        const room = ses.rooms.find(r => Number(r.room) === roomNo) || { room:roomNo, bookings:[] };
+        const room = ses.rooms.find(r => Number(r.room) === roomNo) || { room:roomNo, bookings:[], available:true };
         const count = room.bookings.length;
-        const clickable = count > 0;
-        return `<div class="room-session ${count >= cap ? 'full' : ''} ${count === 0 ? 'empty' : ''}" ${clickable ? `onclick="openRoomDetail('${jsEsc(d.date)}','${jsEsc(ses.sessionId)}',${roomNo})"` : ''}><div class="room-session-time">${esc(ses.start)}–${esc(ses.end)}</div><div class="room-session-count">${count}/${cap}</div></div>`;
+        const available = room.available !== false;
+        const clickable = available && count > 0;
+        return `<div class="room-session ${!available ? 'full empty' : (count >= cap ? 'full' : '')} ${count === 0 ? 'empty' : ''}" ${clickable ? `onclick="openRoomDetail('${jsEsc(d.date)}','${jsEsc(ses.sessionId)}',${roomNo})"` : ''}><div class="room-session-time">${esc(ses.start)}–${esc(ses.end)}</div><div class="room-session-count">${available ? `${count}/${cap}` : 'Tidak tersedia'}</div></div>`;
       }).join('');
       return `<div class="room-column"><div class="room-head"><strong>Breakout ${roomNo}</strong><span>Maks. ${cap} instansi / sesi</span></div>${cells}</div>`;
     }).join('');

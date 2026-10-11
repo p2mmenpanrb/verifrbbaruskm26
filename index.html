@@ -1,0 +1,2296 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Monitor Pengumpulan Data RB melalui skm.go.id</title>
+<style>
+:root{
+  --text:#101828;--muted:#667085;--line:#eaecf0;--line2:#d0d5dd;--soft:#f8f9fa;
+  --brand:#b42318;--brand2:#912018;--brandsoft:#fff5f4;--blue:#175cd3;--bluesoft:#eff8ff;
+  --amber:#b54708;--ambersoft:#fffaeb;--green:#067647;--greensoft:#ecfdf3;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#fff;color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;font-size:15px;line-height:1.5}
+button,input,select,textarea{font:inherit}.hidden{display:none!important}
+.page{max-width:1220px;margin:auto;padding:34px 24px 72px}
+.kicker{font-size:13px;color:var(--muted);margin-bottom:4px}
+h1{margin:0;font-size:28px;line-height:1.2}.lead{margin:7px 0 0;color:var(--muted);max-width:840px}
+
+.topbar{display:flex;justify-content:space-between;gap:20px;align-items:flex-start}
+.mode-switch{display:inline-flex;padding:4px;background:#f2f4f7;border-radius:10px;flex:0 0 auto}
+.mode-btn{border:0;background:transparent;color:#475467;border-radius:8px;padding:9px 13px;font-size:13px;font-weight:650;cursor:pointer}
+.mode-btn.active{background:#fff;color:#101828;box-shadow:0 1px 2px rgba(16,24,40,.08)}
+
+.notice{margin:22px 0 18px;padding:13px 15px;border:1px solid #b2ddff;background:var(--bluesoft);color:#1849a9;border-radius:11px;font-size:13px}
+
+.landing-card{margin-top:22px;padding:18px;border:1px solid var(--line);border-radius:13px}
+.landing-card h2{margin:0;font-size:17px}.landing-card p{margin:4px 0 14px;color:var(--muted);font-size:13px}
+.selector{display:grid;grid-template-columns:1fr auto;gap:9px;align-items:end}
+
+.field label{display:block;font-size:12px;font-weight:650;color:#475467;margin-bottom:5px}
+input,select,textarea{width:100%;border:1px solid var(--line2);border-radius:9px;background:#fff;color:var(--text);padding:9px 10px}
+input,select{height:42px}textarea{min-height:90px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#1570ef;box-shadow:0 0 0 3px rgba(21,112,239,.12)}
+
+.btn{min-height:38px;border-radius:9px;border:1px solid transparent;padding:8px 12px;font-size:12px;font-weight:650;cursor:pointer}
+.btn-primary{background:var(--brand);color:#fff}.btn-primary:hover{background:var(--brand2)}
+.btn-secondary{background:#fff;border-color:var(--line2);color:#344054}
+.btn-danger{background:#fff;border-color:#fda29b;color:var(--brand)}
+.btn-link{background:transparent;border:0;color:var(--blue);font-weight:650;padding:0;cursor:pointer}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+.empty{text-align:center;padding:38px 12px;color:var(--muted)}
+.empty strong{display:block;color:#344054;margin-bottom:3px}
+
+.access-block{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;padding:18px 0;border-bottom:1px solid var(--line)}
+.inst-name{font-size:20px;font-weight:700}.inst-meta{font-size:12px;color:var(--muted);margin-top:3px}
+.pill{display:inline-flex;padding:4px 8px;border:1px solid var(--line2);border-radius:999px;color:#475467;font-size:11px;font-weight:650;white-space:nowrap}
+.pill.edit{border-color:#fecdca;color:var(--brand);background:var(--brandsoft)}
+.pill.pending{border-color:#fedf89;color:var(--amber);background:var(--ambersoft)}
+
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:20px 0}
+.step{display:flex;gap:8px;align-items:center;border:1px solid var(--line);border-radius:9px;padding:9px 11px;color:var(--muted);font-size:12px}
+.step-num{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:#f2f4f7;color:#475467;font-weight:700}
+.step.active{background:#fcfcfd;color:#344054}.step.active .step-num{background:#344054;color:#fff}
+
+.scorecards{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line);border-radius:11px;overflow:hidden;margin-top:16px}
+.score{padding:13px 15px}.score+.score{border-left:1px solid var(--line)}
+.score .label{font-size:11px;color:var(--muted)}.score .value{font-size:21px;font-weight:700;margin-top:3px;font-variant-numeric:tabular-nums}.score .hint{font-size:10px;color:#98a2b3;margin-top:2px}
+
+.view-switch{display:inline-flex;margin-top:24px;padding:4px;background:#f2f4f7;border-radius:10px}
+.view-btn{border:0;background:transparent;color:#475467;border-radius:8px;padding:8px 12px;font-size:12px;font-weight:650;cursor:pointer}
+.view-btn.active{background:#fff;color:#101828;box-shadow:0 1px 2px rgba(16,24,40,.08)}
+
+.export-box{margin-top:14px;padding:12px 14px;border:1px solid var(--line);border-radius:10px;display:flex;justify-content:space-between;gap:15px;align-items:center}
+.export-box strong{font-size:13px}.export-box p{margin:2px 0 0;font-size:11px;color:var(--muted)}
+
+.section{margin-top:22px}
+.section-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:14px}
+.section-head h2{margin:0;font-size:20px}.desc{margin:4px 0 0;color:var(--muted);font-size:13px}
+.fast{border:1px solid var(--line);background:#fcfcfd;border-radius:11px;padding:13px 15px;margin-bottom:14px}.fast strong{display:block}.fast p{margin:3px 0 9px;color:var(--muted);font-size:12px}
+.filters{display:grid;grid-template-columns:1.5fr 1fr auto;gap:8px;margin-bottom:11px}
+.summary-line{display:flex;gap:16px;flex-wrap:wrap;margin:11px 0 13px;color:var(--muted);font-size:12px}.summary-line strong{color:var(--text)}
+
+.group-list{display:grid;gap:11px}
+.group{border:1px solid var(--line);border-radius:11px;overflow:hidden}
+.group-head{display:flex;justify-content:space-between;gap:16px;align-items:center;padding:12px 14px;background:#fcfcfd;border-bottom:1px solid var(--line)}
+.group-title{font-weight:700}.group-sub{font-size:11px;color:var(--muted);margin-top:1px}.group-count{font-size:11px;color:var(--muted)}
+.upload-row{
+  display:grid;grid-template-columns:minmax(235px,1.3fr) 84px 84px 178px 112px 110px;
+  gap:11px;align-items:center;padding:11px 14px;border-bottom:1px solid var(--line);
+  transition:opacity .2s ease,background .2s ease,filter .2s ease
+}
+.upload-row:last-child{border-bottom:0}.upload-row:hover{background:#fcfcfd}
+.upload-row.is-cancelled{opacity:.36;filter:grayscale(.5);background:#fafafa}
+.upload-main{min-width:0}.upload-title{font-weight:650}.upload-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.small-label{font-size:10px;color:var(--muted)}.small-value{font-weight:700}
+.pj-status{font-size:11px;color:#475467;line-height:1.35}.request-status{font-size:12px;font-weight:650;color:#475467}.request-status.cancelled{color:var(--brand)}
+.new-tag{display:inline-flex;margin-left:5px;padding:2px 6px;border:1px solid #fecdca;border-radius:999px;color:var(--brand);font-size:9px;font-weight:700}
+.row-action{display:flex;justify-content:flex-end}
+.detail{display:none;padding:8px 14px 10px;background:#fafafa;border-bottom:1px solid var(--line);font-size:11px;color:var(--muted)}
+.detail.open{display:block}.detail-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+
+.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:11px}
+table{width:100%;border-collapse:collapse;min-width:1100px;font-size:12px}
+th{padding:9px 11px;text-align:left;color:#475467;background:#f9fafb;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:10px 11px;border-bottom:1px solid var(--line);vertical-align:middle}
+tbody tr:last-child td{border-bottom:0}.log-cancelled{opacity:.38;background:#fafafa}
+.num{text-align:right;font-variant-numeric:tabular-nums}.raw-id{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#475467;font-size:11px}
+
+.form-section{margin-top:30px;padding-top:25px;border-top:1px solid var(--line)}
+.form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.full{grid-column:1/-1}
+.consult{margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+.choice-row{display:flex;gap:8px;margin-top:7px}.choice{min-width:70px;min-height:38px;border:1px solid var(--line2);background:#fff;border-radius:9px;color:#475467;font-weight:650;cursor:pointer}
+.choice.active{border-color:var(--brand);color:var(--brand);background:var(--brandsoft)}
+.booking{display:grid;grid-template-columns:230px 1fr;gap:12px;margin-top:12px}.slots{display:flex;gap:7px;flex-wrap:wrap;margin-top:6px}
+.slot{border:1px solid var(--line2);background:#fff;border-radius:8px;padding:6px 9px;font-size:12px;cursor:pointer}.slot.active{border-color:var(--brand);color:var(--brand);background:var(--brandsoft)}
+.declaration{display:flex;gap:8px;align-items:flex-start;margin-top:16px;font-size:13px;color:#475467}.declaration input{width:17px;height:17px;margin-top:2px}
+.submit{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+
+/* INTERNAL */
+.internal-shell{margin-top:20px}
+.internal-banner{display:flex;justify-content:space-between;gap:16px;align-items:center;padding:14px 15px;border:1px solid #d6bbfb;background:#f9f5ff;border-radius:11px}
+.internal-banner strong{display:block;color:#53389e}.internal-banner span{font-size:12px;color:#6941c6}
+.internal-grid{display:grid;grid-template-columns:1.4fr .9fr;gap:16px;margin-top:16px}
+.internal-panel{border:1px solid var(--line);border-radius:11px;padding:14px}
+.internal-panel h3{margin:0;font-size:15px}.internal-panel .sub{margin:3px 0 12px;color:var(--muted);font-size:11px}
+.quick-cards{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.quick{padding:11px 12px}.quick+.quick{border-left:1px solid var(--line)}.quick .q-label{font-size:10px;color:var(--muted)}.quick .q-value{font-size:16px;font-weight:700;margin-top:2px}
+.guidance{padding:12px;border:1px solid #b2ddff;background:var(--bluesoft);border-radius:9px;color:#1849a9;font-size:12px}
+.guidance strong{display:block;margin-bottom:3px}
+.internal-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:11px}
+.activity-list{display:grid;gap:8px}
+.activity{padding:8px 0;border-bottom:1px solid var(--line);font-size:11px}.activity:last-child{border-bottom:0}.activity strong{display:block;color:#344054}.activity span{color:var(--muted)}
+.note-box textarea{min-height:110px}.note-meta{font-size:10px;color:var(--muted);margin-top:5px}
+.source-list{display:grid;gap:7px}.source-item{display:flex;justify-content:space-between;gap:10px;font-size:11px;padding:6px 0;border-bottom:1px solid var(--line)}.source-item:last-child{border-bottom:0}.source-item span:first-child{color:var(--muted)}
+
+.logs{margin-top:30px;padding-top:22px;border-top:1px solid var(--line)}
+.logs details{border-bottom:1px solid var(--line)}.logs summary{cursor:pointer;padding:11px 0;font-weight:650;list-style:none}
+.logs summary::-webkit-details-marker{display:none}.log-content{padding:0 0 12px}
+.log-table{width:100%;border-collapse:collapse;font-size:11px}.log-table th,.log-table td{text-align:left;padding:8px;border-bottom:1px solid var(--line)}
+.log-table th{background:#f9fafb;color:#475467}.log-table td{color:#667085}
+
+.modal-wrap{position:fixed;inset:0;background:rgba(16,24,40,.3);display:grid;place-items:center;padding:18px;z-index:100}
+.modal{width:min(580px,100%);max-height:90vh;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 24px 48px rgba(16,24,40,.14);padding:21px}
+.modal h3{margin:0}.modal p{color:var(--muted);font-size:13px}.review{margin:14px 0}.review-row{display:flex;justify-content:space-between;gap:14px;padding:7px 0;border-bottom:1px solid var(--line);font-size:13px}.review-row span:first-child{color:var(--muted)}
+.zoom{padding:11px;border:1px solid #b2ddff;background:var(--bluesoft);border-radius:9px;color:#1849a9;font-size:13px;line-height:1.6;margin-top:11px}
+
+
+/* LOADING STATE — PROGRESS BAR */
+.loading-overlay{
+  position:fixed;
+  inset:0;
+  z-index:9999;
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+  background:#fff;
+}
+.loading-overlay.is-hidden{
+  display:none;
+}
+.loading-card{
+  width:min(560px,calc(100% - 40px));
+  margin-top:18vh;
+  padding:0;
+}
+.loading-brand{
+  font-size:12px;
+  color:var(--muted);
+  margin-bottom:7px;
+}
+.loading-title{
+  font-size:20px;
+  font-weight:700;
+  color:var(--text);
+}
+.loading-text{
+  margin-top:5px;
+  font-size:13px;
+  color:var(--muted);
+}
+.loading-progress{
+  width:100%;
+  height:6px;
+  margin-top:20px;
+  border-radius:99px;
+  overflow:hidden;
+  background:#f2f4f7;
+}
+.loading-progress span{
+  display:block;
+  width:0%;
+  height:100%;
+  border-radius:99px;
+  background:var(--brand);
+  transition:width .25s ease;
+}
+.loading-meta{
+  display:flex;
+  justify-content:space-between;
+  gap:16px;
+  margin-top:8px;
+  color:#98a2b3;
+  font-size:11px;
+}
+
+.upload-summary-label{
+  margin:0 0 6px 2px;
+  color:#667085;
+  font-size:11px;
+  font-weight:650;
+}
+
+@media(max-width:950px){
+    
+  .topbar{display:block}.mode-switch{margin-top:16px}
+  .scorecards{grid-template-columns:repeat(2,1fr)}
+  .score:nth-child(3){border-left:0;border-top:1px solid var(--line)}
+  .score:nth-child(4){border-top:1px solid var(--line)}
+  .quick-cards{grid-template-columns:1fr 1fr}.quick:nth-child(3){border-left:0;border-top:1px solid var(--line)}.quick:nth-child(4){border-top:1px solid var(--line)}
+  .internal-grid{grid-template-columns:1fr}
+  .upload-row{grid-template-columns:1fr 78px 78px 150px}.request-status,.row-action{grid-column:auto}
+  .form-grid,.booking,.detail-grid{grid-template-columns:1fr}
+}
+@media(max-width:620px){
+  
+  .page{padding:24px 15px 46px}.selector,.filters,.scorecards,.quick-cards{grid-template-columns:1fr}
+  .score+.score,.quick+.quick{border-left:0;border-top:1px solid var(--line)}
+  .upload-row{grid-template-columns:1fr 1fr}.upload-main,.pj-status,.request-status,.row-action{grid-column:1/-1}.row-action{justify-content:flex-start}
+  .view-switch,.mode-switch{display:flex}.view-btn,.mode-btn{flex:1}
+  .export-box{display:block}.export-box .btn{margin-top:10px}
+}
+
+/* CONSULTATION SLOT RENDER — FINAL */
+.booking{
+  grid-template-columns:220px minmax(0,1fr);
+  align-items:start;
+}
+.slot-wrap{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:8px;
+  width:100%;
+}
+.slot-card{
+  appearance:none;
+  -webkit-appearance:none;
+  min-width:0;
+  width:100%;
+  min-height:58px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:flex-start;
+  gap:2px;
+  padding:9px 11px;
+  border:1px solid var(--line2);
+  border-radius:9px;
+  background:#fff;
+  color:var(--text);
+  text-align:left;
+  cursor:pointer;
+  box-shadow:none;
+}
+.slot-card:hover:not(:disabled){
+  border-color:#98a2b3;
+  background:#fcfcfd;
+}
+.slot-card.active{
+  border-color:var(--brand);
+  background:var(--brandsoft);
+}
+.slot-card.disabled,
+.slot-card:disabled{
+  opacity:.48;
+  cursor:not-allowed;
+  background:#f9fafb;
+}
+.slot-time{
+  display:block;
+  width:100%;
+  font-size:12px;
+  line-height:1.25;
+  font-weight:700;
+  color:#344054;
+  white-space:nowrap;
+}
+.slot-capacity{
+  display:block;
+  width:100%;
+  margin:0;
+  font-size:12px;
+  line-height:1.25;
+  font-weight:700;
+  color:var(--muted);
+}
+.slot-card.active .slot-time,
+.slot-card.active .slot-capacity{
+  color:var(--brand);
+}
+.consult-info{
+  grid-column:1/-1;
+  margin-top:2px;
+  padding:9px 11px;
+  border:1px solid var(--line);
+  border-radius:9px;
+  background:#fcfcfd;
+  color:#475467;
+  font-size:11px;
+}
+
+.existing-booking{
+  margin-top:10px;
+  padding:11px 12px;
+  border:1px solid #b2ddff;
+  background:#eff8ff;
+  border-radius:9px;
+  color:#1849a9;
+  font-size:12px;
+}
+.existing-booking strong{
+  display:block;
+  margin-bottom:3px;
+  color:#175cd3;
+}
+
+
+.internal-landing{
+  margin-top:22px;
+}
+.internal-landing-head{
+  display:flex;
+  justify-content:space-between;
+  gap:16px;
+  align-items:flex-end;
+  margin-bottom:12px;
+}
+.internal-landing-head h2{
+  margin:0;
+  font-size:20px;
+}
+.internal-landing-head p{
+  margin:4px 0 0;
+  color:var(--muted);
+  font-size:12px;
+}
+.schedule-date-block{
+  margin-top:14px;
+}
+.schedule-date-title{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  align-items:center;
+  margin-bottom:8px;
+}
+.schedule-date-title strong{
+  font-size:14px;
+}
+.schedule-date-title span{
+  font-size:11px;
+  color:var(--muted);
+}
+.room-board{
+  display:grid;
+  grid-template-columns:repeat(6,minmax(150px,1fr));
+  gap:8px;
+  overflow-x:auto;
+  padding-bottom:3px;
+}
+.room-column{
+  min-width:150px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  overflow:hidden;
+  background:#fff;
+}
+.room-head{
+  padding:9px 10px;
+  background:#f9fafb;
+  border-bottom:1px solid var(--line);
+}
+.room-head strong{
+  display:block;
+  font-size:12px;
+}
+.room-head span{
+  font-size:10px;
+  color:var(--muted);
+}
+.room-session{
+  padding:9px 10px;
+  border-bottom:1px solid var(--line);
+}
+.room-session:last-child{
+  border-bottom:0;
+}
+.room-session-time{
+  font-size:11px;
+  font-weight:650;
+  color:#344054;
+}
+.room-session-count{
+  margin-top:2px;
+  font-size:11px;
+  color:var(--muted);
+}
+.room-session.full{
+  background:#f9fafb;
+  opacity:.6;
+}
+.internal-select-wrap{
+  margin-top:20px;
+  padding-top:18px;
+  border-top:1px solid var(--line);
+}
+.internal-select-wrap h3{
+  margin:0;
+  font-size:15px;
+}
+.internal-select-wrap p{
+  margin:3px 0 12px;
+  color:var(--muted);
+  font-size:11px;
+}
+
+.room-session{
+  cursor:pointer;
+  transition:background .15s ease,border-color .15s ease,transform .05s ease;
+}
+.room-session:hover{
+  background:#f2f4f7;
+}
+.room-session:active{
+  transform:translateY(1px);
+}
+.room-session.empty{
+  cursor:default;
+}
+.room-session.empty:hover{
+  background:transparent;
+}
+.booking-list{
+  display:grid;
+  gap:8px;
+  margin-top:14px;
+}
+.booking-item{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:12px;
+  align-items:center;
+  padding:10px 11px;
+  border:1px solid var(--line);
+  border-radius:9px;
+}
+.booking-name{
+  font-size:13px;
+  font-weight:650;
+  color:#344054;
+}
+.booking-meta{
+  margin-top:2px;
+  font-size:11px;
+  color:var(--muted);
+}
+.booking-empty{
+  padding:20px 10px;
+  text-align:center;
+  color:var(--muted);
+  font-size:12px;
+  border:1px dashed var(--line2);
+  border-radius:9px;
+  margin-top:14px;
+}
+
+
+/* BREAKOUT SCHEDULE ALIGNMENT */
+.room-column{
+  display:flex;
+  flex-direction:column;
+}
+.room-head{
+  min-height:74px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:flex-start;
+}
+.room-session{
+  min-height:67px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:flex-start;
+  text-align:left;
+}
+.room-session-time,
+.room-session-count{
+  width:100%;
+  text-align:left;
+}
+.room-session-time{
+  line-height:1.25;
+}
+.room-session-count{
+  line-height:1.25;
+}
+.room-session.empty{
+  justify-content:center;
+  align-items:flex-start;
+  text-align:left;
+}
+.room-session.empty .room-session-time,
+.room-session.empty .room-session-count{
+  text-align:left;
+}
+
+
+.internal-page-nav{
+  display:inline-flex;
+  margin-top:18px;
+  padding:4px;
+  background:#f2f4f7;
+  border-radius:10px;
+}
+.internal-page-btn{
+  border:0;
+  background:transparent;
+  color:#475467;
+  border-radius:8px;
+  padding:8px 12px;
+  font-size:12px;
+  font-weight:650;
+  cursor:pointer;
+}
+.internal-page-btn.active{
+  background:#fff;
+  color:#101828;
+  box-shadow:0 1px 2px rgba(16,24,40,.08);
+}
+.internal-assistance-page{
+  margin-top:18px;
+}
+
+
+.internal-assist-summary{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  border:1px solid var(--line);
+  border-radius:11px;
+  overflow:hidden;
+  margin-top:16px;
+}
+.assist-summary-item{
+  padding:12px 13px;
+}
+.assist-summary-item+.assist-summary-item{
+  border-left:1px solid var(--line);
+}
+.assist-value{
+  margin-top:3px;
+  font-size:15px;
+  line-height:1.25;
+  font-weight:700;
+  color:#101828;
+}
+.assist-value.small{
+  font-size:12px;
+  line-height:1.35;
+}
+.internal-work-nav{
+  display:inline-flex;
+  margin-top:18px;
+  padding:4px;
+  background:#f2f4f7;
+  border-radius:10px;
+}
+.internal-work-btn{
+  border:0;
+  background:transparent;
+  color:#475467;
+  border-radius:8px;
+  padding:8px 12px;
+  font-size:12px;
+  font-weight:650;
+  cursor:pointer;
+}
+.internal-work-btn.active{
+  background:#fff;
+  color:#101828;
+  box-shadow:0 1px 2px rgba(16,24,40,.08);
+}
+.internal-work-pane{
+  margin-top:16px;
+}
+
+.internal-auth-card{
+  width:min(430px,100%);
+}
+.internal-auth-icon{
+  width:38px;
+  height:38px;
+  display:grid;
+  place-items:center;
+  border-radius:10px;
+  background:#f2f4f7;
+  color:#344054;
+  font-weight:800;
+  margin-bottom:14px;
+}
+.internal-auth-error{
+  margin-top:9px;
+  padding:9px 10px;
+  border:1px solid #fecdca;
+  border-radius:8px;
+  background:#fff5f4;
+  color:#b42318;
+  font-size:11px;
+}
+.internal-auth-actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:8px;
+  margin-top:14px;
+}
+.internal-logout-btn{
+  margin-left:4px;
+}
+
+@media(max-width:900px){
+  .internal-assist-summary{grid-template-columns:1fr 1fr}
+  .assist-summary-item:nth-child(3){border-left:0;border-top:1px solid var(--line)}
+  .assist-summary-item:nth-child(4){border-top:1px solid var(--line)}
+}
+@media(max-width:620px){
+  .internal-assist-summary{grid-template-columns:1fr}
+  .assist-summary-item+.assist-summary-item{border-left:0;border-top:1px solid var(--line)}
+  .internal-work-nav{display:flex}
+  .internal-work-btn{flex:1}
+}
+
+@media(max-width:900px){
+  .room-board{
+    grid-template-columns:repeat(3,minmax(150px,1fr));
+  }
+}
+@media(max-width:620px){
+  .room-board{
+    grid-template-columns:repeat(2,minmax(145px,1fr));
+  }
+}
+
+@media(max-width:900px){
+  .booking{grid-template-columns:1fr}
+  .slot-wrap{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:620px){
+  .slot-wrap{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+
+</style>
+</head>
+<body>
+
+<div id="loadingOverlay" class="loading-overlay" aria-live="polite" aria-busy="true">
+  <div class="loading-card">
+    <div class="loading-brand">Monitor pengumpulan data RB melalui skm.go.id</div>
+    <div id="loadingTitle" class="loading-title">Memuat portal...</div>
+    <div id="loadingText" class="loading-text">Mohon tunggu, data sedang disiapkan.</div>
+    <div class="loading-progress" aria-hidden="true">
+      <span id="loadingBar"></span>
+    </div>
+    <div class="loading-meta">
+      <span id="loadingStage">Menyiapkan portal</span>
+      <span id="loadingPercent">0%</span>
+    </div>
+  </div>
+</div>
+<main class="page">
+  <div class="topbar">
+    <div>
+      <div class="kicker">Evaluasi Reformasi Birokrasi 2026</div>
+      <h1>Monitor pengumpulan data RB melalui skm.go.id</h1>
+      <p class="lead" id="leadText">
+        Portal ini digunakan untuk memantau data SKM yang tercatat melalui skm.go.id untuk kebutuhan evaluasi Reformasi Birokrasi 2026,
+        termasuk riwayat upload bulk/offline, jumlah responden yang dihitung untuk evaluasi,
+        status persetujuan Penanggung Jawab, serta klarifikasi usulan penghapusan data.
+      </p>
+    </div>
+    <div class="mode-switch">
+      <button id="modeInstitution" class="mode-btn active" onclick="switchMode('institution')">Tampilan Instansi</button>
+      <button id="modeInternal" class="mode-btn" onclick="switchMode('internal')">Tampilan Tim Internal</button>
+    </div>
+  </div>
+
+  <div id="publicNotice" class="notice">
+    <strong>Pantau data instansi Anda dalam satu halaman.</strong>
+    Pilih instansi untuk melihat data yang telah masuk ke skm.go.id. Hak untuk melakukan penyesuaian hanya tersedia bagi instansi yang telah ditetapkan pada sistem.
+  </div>
+
+  
+  
+  <div id="internalPageNav" class="internal-page-nav hidden">
+    <button id="internalScheduleTab" class="internal-page-btn active" onclick="switchInternalPage('schedule')">
+      Jadwal Breakout
+    </button>
+    <button id="internalAssistanceTab" class="internal-page-btn" onclick="switchInternalPage('assistance')">
+      Pendampingan Instansi
+    </button>
+    <button class="internal-page-btn internal-logout-btn" onclick="logoutInternal()">
+      Keluar Internal
+    </button>
+  </div>
+
+<section id="internalLanding" class="internal-landing hidden">
+    <div class="internal-landing-head">
+      <div>
+        <h2>Jadwal breakout room konsultasi</h2>
+        <p>Ringkasan seluruh sesi aktif. Setiap breakout room maksimal 4 instansi.</p>
+      </div>
+      <button class="btn btn-secondary" onclick="loadInternalSchedule()">Refresh jadwal</button>
+    </div>
+
+    <div id="internalLandingSchedule"></div>
+  </section>
+
+  <section id="internalAssistancePage" class="internal-assistance-page">
+    <section id="institutionSelectorCard" class="landing-card">
+    <h2 id="selectorTitle">Pilih instansi</h2>
+    <p id="selectorHelp">
+      Cari nama instansi untuk melihat ringkasan pengumpulan data RB, riwayat upload, status Penanggung Jawab, dan status usulan penghapusan.
+    </p>
+    <div class="selector">
+      <div class="field">
+        <label for="institutionInput">Instansi</label>
+        <input id="institutionInput" list="institutionList" placeholder="Ketik nama instansi..." autocomplete="off">
+        <datalist id="institutionList"></datalist>
+      </div>
+      <button class="btn btn-primary" onclick="loadSelectedInstitution()">Tampilkan</button>
+    </div>
+  </section>
+
+  <div id="emptyState" class="empty">
+    <strong>Belum ada instansi dipilih</strong>
+    Data akan ditampilkan setelah instansi dipilih.
+  </div>
+  </section>
+
+
+  
+
+  <div id="app" class="hidden">
+    <section class="access-block">
+      <div>
+        <div class="inst-name" id="institutionName">—</div>
+        <div class="inst-meta" id="institutionStatusText">—</div>
+      </div>
+      <span id="accessPill" class="pill">—</span>
+    </section>
+
+    <!-- INSTITUTION MODE -->
+    <div id="institutionMode">
+      <div id="editSteps" class="steps">
+        <div class="step active"><span class="step-num">1</span><span>Periksa usulan penghapusan</span></div>
+        <div class="step"><span class="step-num">2</span><span>Tambah atau batalkan jika perlu</span></div>
+        <div class="step"><span class="step-num">3</span><span>Kirim klarifikasi</span></div>
+      </div>
+
+      <div>
+<div>
+          <div class="upload-summary-label">RINGKASAN DATA UPLOAD BULK / OFFLINE</div>
+          <div class="scorecards">
+            <div class="score">
+              <div class="label">Periode data upload</div>
+              <div class="value" style="font-size:16px">1 Jan–5 Okt 2026</div>
+              <div class="hint">Riwayat upload yang tercatat</div>
+            </div>
+            <div class="score">
+              <div class="label">Jumlah responden dalam file</div>
+              <div class="value" id="allRespondents">0</div>
+              <div class="hint">Seluruh responden pada file upload</div>
+            </div>
+            <div class="score">
+              <div class="label">Responden yang dihitung untuk evaluasi</div>
+              <div class="value" id="cutoffRespondents">0</div>
+              <div class="hint">Penerimaan layanan s.d. 30 Sep 2026</div>
+            </div>
+            <div class="score" id="deletionScore">
+              <div class="label">Aktif diajukan untuk dihapus</div>
+              <div class="value" id="activeDeletionCount">0</div>
+              <div class="hint">Setelah perubahan saat ini</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      </div>
+
+      <div id="institutionPublicWorkspace">
+      <div id="editOnlyArea">
+        <div class="view-switch">
+          <button id="tabDeletion" class="view-btn active" onclick="switchInstitutionView('deletion')">Usulan penghapusan</button>
+          <button id="tabUploads" class="view-btn" onclick="switchInstitutionView('uploads')">Semua log upload</button>
+        </div>
+      </div>
+
+      <div class="export-box">
+        <div>
+          <strong>Perlu menyimpan data?</strong>
+          <p>Unduh salinan Excel sebagai referensi. Perubahan tetap dilakukan melalui website.</p>
+        </div>
+        <button class="btn btn-secondary" onclick="exportExcel(this)">Unduh Excel</button>
+      </div>
+
+      <section id="deletionView" class="section">
+        <div class="section-head">
+          <div>
+            <h2>Usulan penghapusan</h2>
+            <p class="desc">Usulan yang dibatalkan tetap terlihat dalam kondisi redup agar dapat dikembalikan sebelum dikirim.</p>
+          </div>
+        </div>
+
+        <div id="fastPath" class="fast">
+          <strong>Apakah seluruh usulan lama masih benar?</strong>
+          <p>Jika ya, tidak perlu mengubah satu per satu.</p>
+          <button class="btn btn-primary" onclick="keepAllOriginal('institution')">Ya, semuanya tetap diajukan</button>
+        </div>
+
+        <div class="filters">
+          <input id="deleteSearch" type="search" placeholder="Cari Batch ID, survei, atau pelayanan..." oninput="renderDeletionList('institution')">
+          <select id="deleteFilter" onchange="renderDeletionList('institution')">
+            <option value="">Semua status</option>
+            <option value="active">Tetap diajukan</option>
+            <option value="cancelled">Dibatalkan</option>
+            <option value="new">Baru ditambahkan</option>
+          </select>
+          <button class="btn btn-secondary" onclick="resetDeleteFilters('institution')">Reset</button>
+        </div>
+
+        <div class="summary-line">
+          <span>Total yang pernah diajukan <strong id="deleteTotal">0</strong></span>
+          <span>Aktif <strong id="deleteActive">0</strong></span>
+          <span>Dibatalkan <strong id="deleteCancelled">0</strong></span>
+          <span>Baru <strong id="deleteNew">0</strong></span>
+        </div>
+
+        <div id="groupList" class="group-list"></div>
+      </section>
+
+      <section id="uploadsView" class="section hidden">
+        <div class="section-head">
+          <div>
+            <h2>Semua log upload</h2>
+            <p class="desc" id="uploadsDescription">Seluruh riwayat upload instansi. Waktu upload ditampilkan sampai detik sesuai data sumber.</p>
+          </div>
+        </div>
+
+        <div class="filters">
+          <input id="uploadSearch" type="search" placeholder="Cari Batch ID, survei, atau pelayanan..." oninput="renderUploadTable('institution')">
+          <select id="uploadFilter" onchange="renderUploadTable('institution')">
+            <option value="">Semua status usulan</option>
+            <option value="active">Diajukan untuk dihapus</option>
+            <option value="cancelled">Dibatalkan</option>
+            <option value="none">Tidak diajukan</option>
+          </select>
+          <button class="btn btn-secondary" onclick="resetUploadFilters('institution')">Reset</button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Batch ID</th><th>Waktu upload (HH:mm:ss)</th><th>Survei / pelayanan</th>
+                <th class="num">Dalam file</th><th class="num">Untuk evaluasi</th>
+                <th>Status Penanggung Jawab</th><th>Status usulan</th><th id="publicActionHeader">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="uploadBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="formSection" class="form-section">
+        <div class="section-head">
+          <div><h2>Konfirmasi sebelum mengirim</h2><p class="desc">Perubahan dari kedua halaman akan dikirim sebagai satu klarifikasi.</p></div>
+        </div>
+        <div class="form-grid">
+          <div class="field"><label>Nama perwakilan</label><input id="repName" placeholder="Nama lengkap"></div>
+          <div class="field"><label>Jabatan / unit kerja</label><input id="repUnit" placeholder="Jabatan atau unit kerja"></div>
+          <div class="field"><label>Nomor kontak</label><input id="repContact" placeholder="Nomor WhatsApp / telepon"></div>
+          <div class="field full"><label>Catatan tambahan (opsional)</label><textarea id="note"></textarea></div>
+        </div>
+        <div class="consult">
+          <div class="field">
+            <label>Perlu konsultasi dengan Tim Kementerian PANRB?</label>
+            <div id="consultChoiceRow" class="choice-row">
+              <button id="consultNo" class="choice" type="button" onclick="setConsult(false)">Tidak</button>
+              <button id="consultYes" class="choice" type="button" onclick="setConsult(true)">Ya</button>
+            </div>
+            <div id="existingBookingBox" class="existing-booking hidden"></div>
+          </div>
+          <div id="bookingArea" class="booking hidden">
+          <div class="field">
+            <label for="bookingDate">Tanggal konsultasi</label>
+            <select id="bookingDate" onchange="renderSlots()">
+              <option value="">Pilih tanggal</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Waktu tersedia <span style="font-weight:400;color:var(--muted)">(kapasitas tersedia)</span></label>
+            <div id="slotArea" class="slot-wrap">
+              <span style="color:var(--muted);font-size:12px">Pilih tanggal terlebih dahulu.</span>
+            </div>
+          </div>
+          <div class="consult-info full">
+            Durasi sesi <strong>20 menit</strong> dengan jeda <strong>10 menit</strong>.
+            Tersedia <strong>6 breakout room × 4 instansi</strong>. Breakout room ditentukan otomatis.
+          </div>
+        </div>
+      </div>
+
+      <label class="declaration"><input id="statement" type="checkbox"><span>Saya menyatakan bahwa usulan penghapusan telah diperiksa dan sesuai dengan keputusan instansi.</span></label>
+        <div class="submit"><button class="btn btn-primary" onclick="openConfirm()">Kirim klarifikasi</button></div>
+      </section>
+
+      <section class="logs">
+        <details id="clarificationLog">
+          <summary>Riwayat klarifikasi</summary>
+          <div class="log-content">
+            <table class="log-table">
+              <thead><tr><th>Waktu</th><th>Perwakilan</th><th>Aktif</th><th>Dibatalkan</th><th>Baru</th><th>Konsultasi</th></tr></thead>
+              <tbody id="clarHistory"><tr><td colspan="6">Belum ada klarifikasi.</td></tr></tbody>
+            </table>
+          </div>
+        </details>
+
+        <details id="institutionAccessLog">
+          <summary>Riwayat akses portal</summary>
+          <div class="log-content">
+            <div style="font-size:11px;color:var(--muted);margin:0 0 8px">
+              Menampilkan akses yang terdeteksi untuk instansi ini. Data ini tidak menunjukkan identitas orang yang membuka portal.
+            </div>
+            <table class="log-table">
+              <thead>
+                <tr>
+                  <th>Akses pertama</th>
+                  <th>Akses terakhir</th>
+                  <th>Jumlah akses</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="institutionAccessBody">
+                <tr><td colspan="4">Belum ada data akses.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </details>
+      </section>
+    </div>
+
+      </div>
+
+    <!-- INTERNAL MODE -->
+    <div id="internalMode" class="hidden internal-shell">
+      <div class="internal-banner">
+        <div>
+          <strong id="internalContextTitle">Pendampingan Instansi</strong>
+          <span>Gunakan halaman ini sebagai alat kerja saat mendampingi instansi. Tidak ada proses kirim klarifikasi dari sisi internal.</span>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-secondary" onclick="switchInternalPage('schedule')">Kembali ke jadwal</button>
+          <button class="btn btn-secondary" onclick="switchMode('institution')">Lihat sebagai instansi</button>
+        </div>
+      </div>
+
+      <div class="internal-assist-summary">
+        <div class="assist-summary-item">
+          <div class="q-label">Status akses</div>
+          <div class="assist-value" id="iqAccess">—</div>
+        </div>
+        <div class="assist-summary-item">
+          <div class="q-label">Usulan aktif</div>
+          <div class="assist-value" id="iqActive">0</div>
+        </div>
+        <div class="assist-summary-item">
+          <div class="q-label">Status klarifikasi</div>
+          <div class="assist-value" id="iqSubmission">Belum dikirim</div>
+        </div>
+        <div class="assist-summary-item">
+          <div class="q-label">Konsultasi</div>
+          <div class="assist-value small" id="iqBooking">Belum dijadwalkan</div>
+        </div>
+      </div>
+
+      <div class="internal-work-nav">
+        <button id="internalWorkSummaryBtn" class="internal-work-btn active" onclick="switchInternalWorkPage('summary')">Ringkasan</button>
+        <button id="internalWorkDeleteBtn" class="internal-work-btn" onclick="switchInternalWorkPage('delete')">Usulan Penghapusan</button>
+        <button id="internalWorkUploadsBtn" class="internal-work-btn" onclick="switchInternalWorkPage('uploads')">Semua Log Upload</button>
+      </div>
+
+      <div id="internalSummaryPane" class="internal-work-pane">
+        <div class="internal-grid">
+          <div class="internal-panel">
+            <h3>Apa yang perlu disampaikan</h3>
+            <div class="sub">Gunakan sebagai panduan singkat saat berbicara dengan PIC instansi.</div>
+            <div id="guidanceBox" class="guidance"></div>
+            <div class="internal-actions">
+              <button class="btn btn-secondary" onclick="copyGuidance()">Salin ringkasan</button>
+              <button class="btn btn-secondary" onclick="exportExcel(this)">Unduh data</button>
+              <button class="btn btn-secondary" onclick="refreshSourceDemo()">Refresh data sumber</button>
+            </div>
+          </div>
+
+          <div class="internal-panel note-box">
+            <h3>Catatan pendampingan</h3>
+            <div class="sub">Catatan ini hanya untuk tim internal.</div>
+            <textarea id="internalNote" placeholder="Contoh: Sudah dihubungi; PIC meminta konfirmasi Batch ID tertentu..."></textarea>
+            <div class="internal-actions">
+              <button class="btn btn-secondary" onclick="saveInternalNote()">Simpan catatan</button>
+            </div>
+            <div id="noteMeta" class="note-meta">Belum ada catatan tersimpan.</div>
+          </div>
+        </div>
+
+        <div class="internal-grid" style="margin-top:16px">
+          <div class="internal-panel">
+            <h3>Aktivitas terbaru</h3>
+            <div class="sub">Perubahan yang dilakukan dari Tampilan Instansi maupun Tim Internal.</div>
+            <div id="activityList" class="activity-list"></div>
+          </div>
+
+          <div class="internal-panel">
+            <h3>Ringkasan data</h3>
+            <div class="sub">Data yang sedang dibahas dengan instansi.</div>
+            <div class="source-list">
+              <div class="source-item"><span>Total upload bulk/offline</span><strong id="srcUploads">0</strong></div>
+              
+              <div class="source-item"><span>PJ disetujui seluruhnya</span><strong id="srcApproved">0</strong></div>
+              <div class="source-item"><span>PJ disetujui sebagian</span><strong id="srcPartial">0</strong></div>
+              <div class="source-item"><span>PJ belum diperiksa</span><strong id="srcPending">0</strong></div>
+              <div class="source-item"><span>Revision data sumber</span><strong id="srcRevision">1</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <section class="logs">
+          <details>
+            <summary>Log akses instansi</summary>
+            <div class="log-content">
+              <table class="log-table">
+                <thead><tr><th>Instansi</th><th>Status akses</th><th>Akses pertama</th><th>Akses terakhir</th><th>Jumlah akses</th></tr></thead>
+                <tbody id="accessBody"></tbody>
+              </table>
+            </div>
+          </details>
+        </section>
+      </div>
+
+      <div id="internalDeletePane" class="internal-work-pane hidden">
+        <div class="section-head">
+          <div>
+            <h2>Usulan penghapusan</h2>
+            <p class="desc">Bantu instansi memeriksa usulan. Perubahan di sini langsung tersinkron dengan Tampilan Instansi.</p>
+          </div>
+        </div>
+
+        <div class="filters">
+          <input id="internalDeleteSearch" type="search" placeholder="Cari Batch ID, survei, atau pelayanan..." oninput="renderDeletionList('internal')">
+          <select id="internalDeleteFilter" onchange="renderDeletionList('internal')">
+            <option value="">Semua status</option>
+            <option value="active">Tetap diajukan</option>
+            <option value="cancelled">Dibatalkan</option>
+            <option value="new">Baru ditambahkan</option>
+          </select>
+          <button class="btn btn-secondary" onclick="resetDeleteFilters('internal')">Reset</button>
+        </div>
+        <div id="internalGroupList" class="group-list"></div>
+      </div>
+
+      <div id="internalUploadsPane" class="internal-work-pane hidden">
+        <div class="section-head">
+          <div>
+            <h2>Semua log upload</h2>
+            <p class="desc">Gunakan untuk menelusuri Batch ID, status PJ terbaru, dan data lain yang mungkin perlu diajukan untuk dihapus.</p>
+          </div>
+        </div>
+
+        <div class="filters">
+          <input id="internalUploadSearch" type="search" placeholder="Cari Batch ID, survei, atau pelayanan..." oninput="renderUploadTable('internal')">
+          <select id="internalUploadFilter" onchange="renderUploadTable('internal')">
+            <option value="">Semua status usulan</option>
+            <option value="active">Diajukan untuk dihapus</option>
+            <option value="cancelled">Dibatalkan</option>
+            <option value="none">Tidak diajukan</option>
+          </select>
+          <button class="btn btn-secondary" onclick="resetUploadFilters('internal')">Reset</button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Batch ID</th>
+                <th>Waktu upload (HH:mm:ss)</th>
+                <th>Survei / pelayanan</th>
+                <th class="num">Dalam file</th>
+                <th class="num">Untuk evaluasi</th>
+                <th>Status Penanggung Jawab</th>
+                <th>Status usulan</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="internalUploadBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div id="confirmModal" class="modal-wrap hidden">
+  <div class="modal">
+    <h3>Periksa sebelum mengirim</h3>
+    <p>Pastikan ringkasan berikut sudah benar.</p>
+    <div class="review">
+      <div class="review-row"><span>Instansi</span><strong id="rInst">—</strong></div>
+      <div class="review-row"><span>Aktif diajukan</span><strong id="rActive">0</strong></div>
+      <div class="review-row"><span>Dibatalkan</span><strong id="rCancelled">0</strong></div>
+      <div class="review-row"><span>Usulan baru</span><strong id="rNew">0</strong></div>
+      <div class="review-row"><span>Perwakilan</span><strong id="rRep">—</strong></div>
+      <div class="review-row"><span>Konsultasi</span><strong id="rConsult">—</strong></div>
+    </div>
+    <div id="zoom" class="zoom hidden">
+      <strong>Zoom konsultasi</strong><br>
+      Meeting ID: 428 152 7886<br>
+      Passcode: PPP2026<br>
+      <a href="https://us02web.zoom.us/j/4281527886?pwd=hBrhxZsUkgMpteLDPHDC0jhXhLjBCT.1&omn=84594673283" target="_blank" rel="noopener">Buka Zoom Meeting</a>
+    </div>
+    <div class="submit">
+      <button class="btn btn-secondary" onclick="closeConfirm()">Kembali</button>
+      <button class="btn btn-primary" onclick="submitClarification()">Ya, kirim</button>
+    </div>
+  </div>
+</div>
+
+
+<div id="roomDetailModal" class="modal-wrap hidden">
+  <div class="modal">
+    <h3 id="roomDetailTitle">Detail breakout room</h3>
+    <p id="roomDetailSubtitle">—</p>
+    <div id="roomBookingList" class="booking-list"></div>
+    <div class="submit">
+      <button class="btn btn-secondary" onclick="closeRoomDetail()">Tutup</button>
+    </div>
+  </div>
+</div>
+
+
+<div id="internalAuthModal" class="modal-wrap hidden">
+  <div class="modal internal-auth-card">
+    <div class="internal-auth-icon">#</div>
+    <h3>Akses Tim Internal</h3>
+    <p>Masukkan passcode untuk membuka jadwal breakout dan alat pendampingan internal.</p>
+
+    <div class="field">
+      <label for="internalPasscodeInput">Passcode</label>
+      <input
+        id="internalPasscodeInput"
+        type="password"
+        autocomplete="current-password"
+        placeholder="Masukkan passcode"
+        onkeydown="if(event.key==='Enter') submitInternalLogin()"
+      >
+    </div>
+
+    <div id="internalAuthError" class="internal-auth-error hidden"></div>
+
+    <div class="internal-auth-actions">
+      <button class="btn btn-secondary" onclick="cancelInternalLogin()">Batal</button>
+      <button id="internalLoginButton" class="btn btn-primary" onclick="submitInternalLogin()">Masuk</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/*
+ * Monitor Pengumpulan Data RB melalui skm.go.id
+ * Production frontend for Netlify.
+ *
+ * API contract:
+ *   GET/POST -> /.netlify/functions/skm-api
+ * Netlify is presentation/proxy only. Business logic remains in Apps Script + Sheets.
+ *
+ * IMPORTANT:
+ * - Batch ID is always treated as an opaque string.
+ * - Upload time is rendered exactly as returned by API, including HH:mm:ss.
+ * - PJ status is always read from the latest backend source data.
+ */
+
+const API_URL = '/.netlify/functions/skm-api';
+
+let bootstrapData = null;
+let config = {};
+let institutions = [];
+let mode = 'institution';
+let internalPage = 'schedule';
+let internalWorkPage = 'summary';
+let session = null;
+let sourceUploads = [];
+let booking = null;
+let availability = null;
+let internalScheduleData = null;
+let internalData = null;
+let selectedSessionId = '';
+let consultationRequired = null;
+let loadingTimer = null;
+let loadingProgressValue = 0;
+
+const browserSessionId = (() => {
+  const key = 'rbPortalBrowserSessionId';
+  let id = sessionStorage.getItem(key);
+  if (!id) {
+    id = (crypto && crypto.randomUUID) ? crypto.randomUUID() : 'S-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+    sessionStorage.setItem(key, id);
+  }
+  return id;
+})();
+
+const INTERNAL_TOKEN_KEY = 'rbPortalInternalToken';
+let internalToken = sessionStorage.getItem(INTERNAL_TOKEN_KEY) || '';
+let pendingInternalModeOpen = false;
+
+// -----------------------------------------------------------------------------
+// API
+// -----------------------------------------------------------------------------
+
+async function apiGet(action, params = {}) {
+  const internalActions = new Set(['internalSession','internalSchedule','internalInstitution']);
+  const authParams = internalActions.has(action)
+    ? { internalToken, browserSessionId }
+    : {};
+
+  const qs = new URLSearchParams({ action, ...authParams, ...Object.fromEntries(
+    Object.entries(params).filter(([,v]) => v !== undefined && v !== null && v !== '')
+  )});
+
+  const res = await fetch(`${API_URL}?${qs.toString()}`, {
+    method: 'GET',
+    headers: { 'Accept': 'application/json' },
+    cache: 'no-store'
+  });
+
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok || !json.ok) throw apiErrorFrom_(json, res.status);
+  return json.data;
+}
+
+async function apiPost(action, payload = {}) {
+  const internalActions = new Set(['saveInternalNote','internalLogout']);
+  const authPayload = internalActions.has(action)
+    ? { internalToken, browserSessionId }
+    : {};
+
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+    body: JSON.stringify({ action, ...authPayload, ...payload })
+  });
+
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok || !json.ok) throw apiErrorFrom_(json, res.status);
+  return json.data;
+}
+
+function apiErrorFrom_(json, status) {
+  const err = new Error(json?.error?.message || `Permintaan gagal (${status}).`);
+  err.code = json?.error?.code || 'API_ERROR';
+  return err;
+}
+
+// -----------------------------------------------------------------------------
+// LOADING
+// -----------------------------------------------------------------------------
+
+function setLoadingProgress(value, stage) {
+  loadingProgressValue = Math.max(0, Math.min(100, value));
+  document.getElementById('loadingBar').style.width = loadingProgressValue + '%';
+  document.getElementById('loadingPercent').textContent = Math.round(loadingProgressValue) + '%';
+  if (stage) document.getElementById('loadingStage').textContent = stage;
+}
+
+function showLoading(title = 'Memuat portal...', text = 'Mohon tunggu, data sedang disiapkan.') {
+  document.getElementById('loadingTitle').textContent = title;
+  document.getElementById('loadingText').textContent = text;
+  const overlay = document.getElementById('loadingOverlay');
+  overlay.classList.remove('is-hidden');
+  overlay.setAttribute('aria-busy', 'true');
+
+  clearInterval(loadingTimer);
+  setLoadingProgress(8, 'Menghubungkan ke sumber data');
+  loadingTimer = setInterval(() => {
+    if (loadingProgressValue < 35) setLoadingProgress(loadingProgressValue + 7, 'Menghubungkan ke sumber data');
+    else if (loadingProgressValue < 65) setLoadingProgress(loadingProgressValue + 4, 'Membaca data');
+    else if (loadingProgressValue < 88) setLoadingProgress(loadingProgressValue + 2, 'Menyiapkan tampilan');
+    else clearInterval(loadingTimer);
+  }, 180);
+}
+
+async function hideLoading() {
+  clearInterval(loadingTimer);
+  setLoadingProgress(100, 'Selesai');
+  await new Promise(r => setTimeout(r, 120));
+  const overlay = document.getElementById('loadingOverlay');
+  overlay.classList.add('is-hidden');
+  overlay.setAttribute('aria-busy', 'false');
+}
+
+
+// -----------------------------------------------------------------------------
+// INTERNAL PASSCODE SESSION
+// -----------------------------------------------------------------------------
+
+function showInternalLogin() {
+  pendingInternalModeOpen = true;
+  document.getElementById('internalAuthError').classList.add('hidden');
+  document.getElementById('internalAuthError').textContent = '';
+  document.getElementById('internalPasscodeInput').value = '';
+  document.getElementById('internalAuthModal').classList.remove('hidden');
+
+  setTimeout(() => {
+    document.getElementById('internalPasscodeInput')?.focus();
+  }, 50);
+}
+
+function cancelInternalLogin() {
+  pendingInternalModeOpen = false;
+  document.getElementById('internalAuthModal').classList.add('hidden');
+  document.getElementById('modeInstitution').classList.add('active');
+  document.getElementById('modeInternal').classList.remove('active');
+}
+
+async function validateInternalSession() {
+  if (!internalToken) return false;
+
+  try {
+    await apiGet('internalSession');
+    return true;
+  } catch (err) {
+    if (
+      err.code === 'INTERNAL_AUTH_REQUIRED' ||
+      err.code === 'INTERNAL_SESSION_EXPIRED'
+    ) {
+      internalToken = '';
+      sessionStorage.removeItem(INTERNAL_TOKEN_KEY);
+      return false;
+    }
+    throw err;
+  }
+}
+
+async function submitInternalLogin() {
+  const passcode = document.getElementById('internalPasscodeInput').value;
+  const button = document.getElementById('internalLoginButton');
+  const errorBox = document.getElementById('internalAuthError');
+
+  if (!passcode) {
+    errorBox.textContent = 'Masukkan passcode.';
+    errorBox.classList.remove('hidden');
+    return;
+  }
+
+  button.disabled = true;
+  button.textContent = 'Memeriksa...';
+  errorBox.classList.add('hidden');
+
+  try {
+    const result = await apiPost('internalLogin', {
+      passcode,
+      browserSessionId
+    });
+
+    internalToken = result.token || '';
+    if (!internalToken) throw new Error('Token internal tidak diterima.');
+
+    sessionStorage.setItem(INTERNAL_TOKEN_KEY, internalToken);
+
+    document.getElementById('internalPasscodeInput').value = '';
+    document.getElementById('internalAuthModal').classList.add('hidden');
+
+    const shouldOpen = pendingInternalModeOpen;
+    pendingInternalModeOpen = false;
+
+    if (shouldOpen) {
+      await openInternalModeAfterAuth();
+    }
+  } catch (err) {
+    errorBox.textContent = err.message || 'Passcode tidak dapat diverifikasi.';
+    errorBox.classList.remove('hidden');
+  } finally {
+    button.disabled = false;
+    button.textContent = 'Masuk';
+  }
+}
+
+async function logoutInternal() {
+  try {
+    if (internalToken) {
+      await apiPost('internalLogout');
+    }
+  } catch (err) {
+    // A stale/expired token can still be removed locally.
+  }
+
+  internalToken = '';
+  sessionStorage.removeItem(INTERNAL_TOKEN_KEY);
+  pendingInternalModeOpen = false;
+
+  await switchMode('institution');
+}
+
+async function openInternalModeAfterAuth() {
+  mode = 'internal';
+
+  document.getElementById('modeInstitution').classList.remove('active');
+  document.getElementById('modeInternal').classList.add('active');
+  document.getElementById('internalPageNav').classList.remove('hidden');
+
+  document.getElementById('publicNotice').classList.add('hidden');
+  document.getElementById('selectorTitle').textContent = 'Pilih instansi untuk didampingi';
+  document.getElementById('selectorHelp').textContent =
+    'Pilih instansi setelah memeriksa jadwal breakout atau saat akan melakukan pendampingan.';
+  document.getElementById('leadText').textContent =
+    'Tampilan kerja tim internal untuk memantau jadwal breakout dan mendampingi instansi.';
+
+  await switchInternalPage('schedule');
+}
+
+
+// -----------------------------------------------------------------------------
+// BOOTSTRAP / MODE
+// -----------------------------------------------------------------------------
+
+async function initializePortal() {
+  showLoading('Memuat portal...', 'Mohon tunggu, daftar instansi sedang disiapkan.');
+  try {
+    bootstrapData = await apiGet('bootstrap');
+    config = bootstrapData.config || {};
+    institutions = bootstrapData.institutions || [];
+    populateInstitutionList();
+    applyConfigText();
+    await switchMode('institution');
+  } catch (err) {
+    showError(err.message || 'Portal belum dapat dimuat.');
+  } finally {
+    await hideLoading();
+  }
+}
+
+function applyConfigText() {
+  if (config.portalTitle) document.title = config.portalTitle;
+}
+
+function populateInstitutionList() {
+  const list = document.getElementById('institutionList');
+  list.innerHTML = '';
+  institutions.forEach(i => {
+    const option = document.createElement('option');
+    option.value = i.name;
+    list.appendChild(option);
+  });
+}
+
+async function switchMode(next) {
+  if (next === 'internal') {
+    const valid = await validateInternalSession();
+
+    if (!valid) {
+      document.getElementById('modeInstitution').classList.remove('active');
+      document.getElementById('modeInternal').classList.add('active');
+      showInternalLogin();
+      return;
+    }
+
+    await openInternalModeAfterAuth();
+    return;
+  }
+
+  mode = 'institution';
+  document.getElementById('modeInstitution').classList.add('active');
+  document.getElementById('modeInternal').classList.remove('active');
+  document.getElementById('internalPageNav').classList.add('hidden');
+
+  document.getElementById('publicNotice').classList.remove('hidden');
+  document.getElementById('selectorTitle').textContent = 'Pilih instansi';
+  document.getElementById('selectorHelp').textContent =
+    'Cari nama instansi untuk melihat ringkasan pengumpulan data RB, riwayat upload, status Penanggung Jawab, dan status usulan penghapusan.';
+  document.getElementById('leadText').textContent =
+    'Portal untuk memantau data SKM yang tercatat melalui skm.go.id dalam rangka evaluasi Reformasi Birokrasi 2026.';
+
+  document.getElementById('internalLanding').classList.add('hidden');
+  document.getElementById('internalAssistancePage').classList.remove('hidden');
+  document.getElementById('internalMode').classList.add('hidden');
+
+  if (session) {
+    document.getElementById('app').classList.remove('hidden');
+    document.getElementById('institutionMode').classList.remove('hidden');
+    document.getElementById('institutionPublicWorkspace')?.classList.remove('hidden');
+  }
+}
+
+async function switchInternalPage(page) {
+  internalPage = page;
+  document.getElementById('internalScheduleTab').classList.toggle('active', page === 'schedule');
+  document.getElementById('internalAssistanceTab').classList.toggle('active', page === 'assistance');
+  document.getElementById('internalLanding').classList.toggle('hidden', page !== 'schedule');
+  document.getElementById('internalAssistancePage').classList.toggle('hidden', page !== 'assistance');
+  document.getElementById('institutionMode')?.classList.add('hidden');
+  document.getElementById('institutionPublicWorkspace')?.classList.add('hidden');
+
+  if (page === 'schedule') {
+    document.getElementById('internalMode').classList.add('hidden');
+    await loadInternalSchedule();
+  } else if (session) {
+    document.getElementById('app').classList.remove('hidden');
+    document.getElementById('internalMode').classList.remove('hidden');
+    switchInternalWorkPage('summary');
+    renderAll();
+  } else {
+    document.getElementById('internalMode').classList.add('hidden');
+  }
+}
+
+function switchInternalWorkPage(page) {
+  internalWorkPage = page;
+  const panes = { summary:'internalSummaryPane', delete:'internalDeletePane', uploads:'internalUploadsPane' };
+  const buttons = { summary:'internalWorkSummaryBtn', delete:'internalWorkDeleteBtn', uploads:'internalWorkUploadsBtn' };
+  Object.entries(panes).forEach(([key,id]) => document.getElementById(id)?.classList.toggle('hidden', key !== page));
+  Object.entries(buttons).forEach(([key,id]) => document.getElementById(id)?.classList.toggle('active', key === page));
+  if (page === 'delete') renderDeletionList('internal');
+  if (page === 'uploads') renderUploadTable('internal');
+}
+
+// -----------------------------------------------------------------------------
+// LOAD INSTITUTION
+// -----------------------------------------------------------------------------
+
+async function loadSelectedInstitution() {
+  const name = document.getElementById('institutionInput').value.trim();
+  const inst = institutions.find(i => i.name === name);
+  if (!inst) return showError('Pilih instansi dari daftar yang tersedia.');
+
+  showLoading('Memuat data instansi...', 'Riwayat upload dan status terbaru sedang disiapkan.');
+  try {
+    const action = mode === 'internal' ? 'internalInstitution' : 'institution';
+    const data = await apiGet(action, {
+      institutionId: inst.institutionId,
+      mode: mode === 'internal' ? 'INTERNAL' : 'INSTITUTION',
+      browserSessionId,
+      track: mode === 'institution' ? '1' : '0'
+    });
+
+    applyInstitutionPayload(data);
+    document.getElementById('app').classList.remove('hidden');
+    document.getElementById('emptyState').classList.add('hidden');
+
+    if (mode === 'internal') {
+      await switchInternalPage('assistance');
+    } else {
+      document.getElementById('institutionMode').classList.remove('hidden');
+      document.getElementById('institutionPublicWorkspace')?.classList.remove('hidden');
+      document.getElementById('internalMode').classList.add('hidden');
+    }
+  } catch (err) {
+    if (
+      mode === 'internal' &&
+      (err.code === 'INTERNAL_AUTH_REQUIRED' || err.code === 'INTERNAL_SESSION_EXPIRED')
+    ) {
+      internalToken = '';
+      sessionStorage.removeItem(INTERNAL_TOKEN_KEY);
+      showInternalLogin();
+    } else {
+      showError(err.message);
+    }
+  } finally {
+    await hideLoading();
+  }
+}
+
+function applyInstitutionPayload(data) {
+  session = data.institution;
+  sourceUploads = (data.uploads || []).map(r => ({ ...r, batchId: String(r.batchId) }));
+  booking = data.booking || null;
+  config = data.config || config;
+  internalData = data;
+
+  document.getElementById('institutionName').textContent = session.name;
+  document.getElementById('institutionStatusText').textContent = 'Status akses: ' + (session.statusAkses || '—');
+
+  applyAccessMode();
+  renderAll();
+}
+
+function canEdit() {
+  return !!session?.canEdit;
+}
+
+function applyAccessMode() {
+  const pill = document.getElementById('accessPill');
+  if (canEdit()) {
+    pill.className = 'pill ' + (normalize(session.statusAkses) === 'terdapat usulan pending' ? 'pending' : 'edit');
+    pill.textContent = normalize(session.statusAkses) === 'terdapat usulan pending' ? 'Perlu menyelesaikan usulan' : 'Dapat melakukan perubahan';
+    document.getElementById('editSteps').classList.remove('hidden');
+    document.getElementById('editOnlyArea').classList.remove('hidden');
+    document.getElementById('deletionScore').classList.remove('hidden');
+    document.getElementById('formSection').classList.remove('hidden');
+    document.getElementById('clarificationLog').classList.remove('hidden');
+    document.getElementById('publicActionHeader').classList.remove('hidden');
+    switchInstitutionView('deletion');
+  } else {
+    pill.className = 'pill';
+    pill.textContent = 'Hanya dapat melihat';
+    document.getElementById('editSteps').classList.add('hidden');
+    document.getElementById('editOnlyArea').classList.add('hidden');
+    document.getElementById('deletionScore').classList.add('hidden');
+    document.getElementById('deletionView').classList.add('hidden');
+    document.getElementById('uploadsView').classList.remove('hidden');
+    document.getElementById('formSection').classList.add('hidden');
+    document.getElementById('clarificationLog').classList.add('hidden');
+    document.getElementById('publicActionHeader').classList.add('hidden');
+  }
+}
+
+function switchInstitutionView(view) {
+  if (!canEdit() && view === 'deletion') return;
+  const deletion = view === 'deletion';
+  document.getElementById('deletionView').classList.toggle('hidden', !deletion);
+  document.getElementById('uploadsView').classList.toggle('hidden', deletion);
+  document.getElementById('tabDeletion').classList.toggle('active', deletion);
+  document.getElementById('tabUploads').classList.toggle('active', !deletion);
+}
+
+// -----------------------------------------------------------------------------
+// RENDER SHARED DATA
+// -----------------------------------------------------------------------------
+
+function renderAll() {
+  if (!session) return;
+  const summary = internalData?.summary || {};
+  document.getElementById('allRespondents').textContent = fmt(summary.uploadRespondents || sum(sourceUploads, 'respondents'));
+  document.getElementById('cutoffRespondents').textContent = fmt(summary.cutoffRespondents || sum(sourceUploads, 'cutoff'));
+  document.getElementById('activeDeletionCount').textContent = sourceUploads.filter(r => r.decision === 'ACTIVE').length;
+
+  renderDeletionSummary();
+  renderDeletionList('institution');
+  renderUploadTable('institution');
+  renderClarificationHistory();
+  renderInstitutionAccessLog();
+  renderInstitutionBookingState();
+  renderInternal();
+}
+
+function isDeletionVisible(r) {
+  return r.originalDelete || r.origin === 'NEW' || r.decision === 'CANCELLED';
+}
+
+function renderDeletionSummary() {
+  const visible = sourceUploads.filter(isDeletionVisible);
+  document.getElementById('deleteTotal').textContent = visible.length;
+  document.getElementById('deleteActive').textContent = sourceUploads.filter(r => r.decision === 'ACTIVE').length;
+  document.getElementById('deleteCancelled').textContent = sourceUploads.filter(r => r.decision === 'CANCELLED').length;
+  document.getElementById('deleteNew').textContent = sourceUploads.filter(r => r.origin === 'NEW' && r.decision === 'ACTIVE').length;
+}
+
+function getDeleteControls(scope) {
+  return scope === 'internal'
+    ? { search:'internalDeleteSearch', filter:'internalDeleteFilter', root:'internalGroupList' }
+    : { search:'deleteSearch', filter:'deleteFilter', root:'groupList' };
+}
+
+function resetDeleteFilters(scope) {
+  const c = getDeleteControls(scope);
+  document.getElementById(c.search).value = '';
+  document.getElementById(c.filter).value = '';
+  renderDeletionList(scope);
+}
+
+function renderDeletionList(scope) {
+  if (!session || (scope === 'institution' && !canEdit())) return;
+  const c = getDeleteControls(scope);
+  const q = (document.getElementById(c.search)?.value || '').toLowerCase().trim();
+  const filter = document.getElementById(c.filter)?.value || '';
+  let rows = sourceUploads.filter(isDeletionVisible);
+
+  if (q) rows = rows.filter(r => `${r.batchId} ${r.survey} ${r.service}`.toLowerCase().includes(q));
+  if (filter === 'active') rows = rows.filter(r => r.decision === 'ACTIVE');
+  if (filter === 'cancelled') rows = rows.filter(r => r.decision === 'CANCELLED');
+  if (filter === 'new') rows = rows.filter(r => r.origin === 'NEW');
+
+  const groups = new Map();
+  rows.forEach(r => {
+    const key = `${r.service}||${r.survey}`;
+    if (!groups.has(key)) groups.set(key, { service:r.service, survey:r.survey, rows:[] });
+    groups.get(key).rows.push(r);
+  });
+
+  const root = document.getElementById(c.root);
+  root.innerHTML = '';
+  if (!rows.length) {
+    root.innerHTML = '<div style="padding:22px;color:var(--muted);text-align:center;border:1px solid var(--line);border-radius:11px">Tidak ada data sesuai filter.</div>';
+    return;
+  }
+
+  groups.forEach(g => {
+    const box = document.createElement('div');
+    box.className = 'group';
+    box.innerHTML = `<div class="group-head"><div><div class="group-title">${esc(g.service || 'Tanpa nama pelayanan')}</div><div class="group-sub">${esc(g.survey || '—')}</div></div><div class="group-count">${g.rows.length} upload</div></div>`;
+
+    g.rows.forEach(r => {
+      const cancelled = r.decision === 'CANCELLED';
+      const actor = scope === 'internal' ? 'INTERNAL' : 'INSTITUTION';
+      const row = document.createElement('div');
+      row.className = 'upload-row' + (cancelled ? ' is-cancelled' : '');
+      row.innerHTML = `
+        <div class="upload-main">
+          <div class="upload-title">${esc(r.time)} ${r.origin === 'NEW' ? '<span class="new-tag">Baru</span>' : ''}</div>
+          <div class="upload-sub">Batch ID: <span class="raw-id">${esc(r.batchId)}</span> · <button class="btn-link" onclick="toggleDetail('${scope}','${jsEsc(r.batchId)}')">Lihat detail</button></div>
+        </div>
+        <div><div class="small-label">Dalam file</div><div class="small-value">${fmt(r.respondents)}</div></div>
+        <div><div class="small-label">Untuk evaluasi</div><div class="small-value">${fmt(r.cutoff)}</div></div>
+        <div class="pj-status"><div class="small-label">Status Penanggung Jawab</div>${esc(r.statusPJ || '—')}</div>
+        <div class="request-status ${cancelled ? 'cancelled' : ''}">${cancelled ? 'Dibatalkan' : 'Tetap diajukan'}</div>
+        <div class="row-action">
+          ${canEdit() ? (cancelled
+            ? `<button class="btn btn-secondary" onclick="changeDecision('${jsEsc(r.batchId)}','ACTIVE','${actor}')">Ajukan kembali</button>`
+            : `<button class="btn btn-danger" onclick="changeDecision('${jsEsc(r.batchId)}','CANCELLED','${actor}')">Batalkan</button>`)
+            : '<span class="pill">View only</span>'}
+        </div>`;
+      box.appendChild(row);
+
+      const detail = document.createElement('div');
+      detail.id = `detail-${scope}-${safeId(r.batchId)}`;
+      detail.className = 'detail';
+      detail.innerHTML = `<div class="detail-grid"><div><strong>Level 1</strong><br>${esc(r.level1 || '—')}</div><div><strong>Level 2</strong><br>${esc(r.level2 || '—')}</div><div><strong>Batch ID</strong><br><span class="raw-id">${esc(r.batchId)}</span></div></div>`;
+      box.appendChild(detail);
+    });
+
+    root.appendChild(box);
+  });
+}
+
+function toggleDetail(scope, batchId) {
+  document.getElementById(`detail-${scope}-${safeId(batchId)}`)?.classList.toggle('open');
+}
+
+function getUploadControls(scope) {
+  return scope === 'internal'
+    ? { search:'internalUploadSearch', filter:'internalUploadFilter', body:'internalUploadBody' }
+    : { search:'uploadSearch', filter:'uploadFilter', body:'uploadBody' };
+}
+
+function resetUploadFilters(scope) {
+  const c = getUploadControls(scope);
+  document.getElementById(c.search).value = '';
+  document.getElementById(c.filter).value = '';
+  renderUploadTable(scope);
+}
+
+function renderUploadTable(scope) {
+  if (!session) return;
+  const c = getUploadControls(scope);
+  const q = (document.getElementById(c.search)?.value || '').toLowerCase().trim();
+  const filter = document.getElementById(c.filter)?.value || '';
+  let rows = [...sourceUploads];
+  if (q) rows = rows.filter(r => `${r.batchId} ${r.survey} ${r.service}`.toLowerCase().includes(q));
+  if (filter === 'active') rows = rows.filter(r => r.decision === 'ACTIVE');
+  if (filter === 'cancelled') rows = rows.filter(r => r.decision === 'CANCELLED');
+  if (filter === 'none') rows = rows.filter(r => r.decision === 'NONE');
+
+  const body = document.getElementById(c.body);
+  body.innerHTML = '';
+  rows.forEach(r => {
+    const tr = document.createElement('tr');
+    if (r.decision === 'CANCELLED') tr.className = 'log-cancelled';
+    let status = 'Tidak diajukan';
+    if (r.decision === 'ACTIVE') status = r.origin === 'NEW' ? 'Baru diajukan' : 'Diajukan untuk dihapus';
+    if (r.decision === 'CANCELLED') status = 'Dibatalkan';
+    const actor = scope === 'internal' ? 'INTERNAL' : 'INSTITUTION';
+    let action = '<span class="pill">View only</span>';
+    if (canEdit()) {
+      if (r.decision === 'ACTIVE') action = `<button class="btn btn-danger" onclick="changeDecision('${jsEsc(r.batchId)}','CANCELLED','${actor}')">Batalkan</button>`;
+      else if (r.decision === 'CANCELLED') action = `<button class="btn btn-secondary" onclick="changeDecision('${jsEsc(r.batchId)}','ACTIVE','${actor}')">Ajukan kembali</button>`;
+      else action = `<button class="btn btn-secondary" onclick="changeDecision('${jsEsc(r.batchId)}','ACTIVE','${actor}')">Ajukan penghapusan</button>`;
+    }
+    const hideAction = scope === 'institution' && !canEdit();
+    tr.innerHTML = `
+      <td><span class="raw-id">${esc(r.batchId)}</span></td>
+      <td>${esc(r.time)}</td>
+      <td><strong>${esc(r.service || '—')}</strong><br><span style="color:var(--muted)">${esc(r.survey || '—')}</span></td>
+      <td class="num">${fmt(r.respondents)}</td>
+      <td class="num">${fmt(r.cutoff)}</td>
+      <td>${esc(r.statusPJ || '—')}</td>
+      <td>${status}${r.origin === 'NEW' ? ' <span class="new-tag">Baru</span>' : ''}</td>
+      <td class="${hideAction ? 'hidden' : ''}">${hideAction ? '' : action}</td>`;
+    body.appendChild(tr);
+  });
+}
+
+async function changeDecision(batchId, decision, actorType) {
+  if (!session || !canEdit()) return;
+  try {
+    const data = await apiPost('updateDecision', {
+      institutionId: session.institutionId,
+      batchId: String(batchId),
+      decision,
+      actorType,
+      actorName: actorType === 'INTERNAL' ? 'Tim Internal' : ''
+    });
+    const row = sourceUploads.find(r => r.batchId === String(batchId));
+    if (row) {
+      row.decision = data.decision;
+      row.origin = data.origin;
+    }
+    renderAll();
+  } catch (err) {
+    if (err.code === 'ACCESS_VIEW_ONLY') await reloadCurrentInstitution();
+    showError(err.message);
+  }
+}
+
+async function keepAllOriginal(actorType = 'INSTITUTION') {
+  const changed = sourceUploads.filter(r => r.originalDelete && r.decision === 'CANCELLED');
+  if (!changed.length) {
+    document.getElementById('formSection')?.scrollIntoView({ behavior:'smooth' });
+    return;
+  }
+  showLoading('Menyimpan perubahan...', 'Mengembalikan usulan lama menjadi tetap diajukan.');
+  try {
+    for (const r of changed) await changeDecision(r.batchId, 'ACTIVE', actorType);
+  } finally {
+    await hideLoading();
+  }
+}
+
+// -----------------------------------------------------------------------------
+// INSTITUTION HISTORY / ACCESS
+// -----------------------------------------------------------------------------
+
+function renderClarificationHistory() {
+  const body = document.getElementById('clarHistory');
+  const rows = internalData?.clarificationHistory || [];
+  if (!body) return;
+  if (!rows.length) {
+    body.innerHTML = '<tr><td colspan="6">Belum ada klarifikasi.</td></tr>';
+    return;
+  }
+  body.innerHTML = rows.map(r => `<tr><td>${esc(r.submittedAt)}</td><td>${esc(r.namaPerwakilan)}</td><td>${fmt(r.activeDeleteCount)}</td><td>${fmt(r.cancelledCount)}</td><td>${fmt(r.newRequestCount)}</td><td>${r.consultationRequired ? 'Ya' : 'Tidak'}</td></tr>`).join('');
+}
+
+function renderInstitutionAccessLog() {
+  const log = internalData?.accessLog || {};
+  const body = document.getElementById('institutionAccessBody');
+  if (!body) return;
+  body.innerHTML = `<tr><td>${esc(log.first || '—')}</td><td>${esc(log.last || '—')}</td><td>${fmt(log.count || 0)}</td><td>Akses terdeteksi</td></tr>`;
+}
+
+// -----------------------------------------------------------------------------
+// CONSULTATION
+// -----------------------------------------------------------------------------
+
+async function setConsult(value) {
+  if (booking) {
+    consultationRequired = true;
+    renderInstitutionBookingState();
+    return;
+  }
+
+  consultationRequired = value;
+  selectedSessionId = '';
+  document.getElementById('consultNo').classList.toggle('active', value === false);
+  document.getElementById('consultYes').classList.toggle('active', value === true);
+  document.getElementById('bookingArea').classList.toggle('hidden', value !== true);
+
+  if (value === true) {
+    await loadConsultationAvailability();
+  } else {
+    document.getElementById('bookingDate').innerHTML = '<option value="">Pilih tanggal</option>';
+    document.getElementById('slotArea').innerHTML = '<span style="color:var(--muted);font-size:12px">Pilih tanggal terlebih dahulu.</span>';
+  }
+}
+
+async function loadConsultationAvailability() {
+  if (!session) return;
+  try {
+    availability = await apiGet('consultationAvailability', { institutionId: session.institutionId });
+    if (availability.existingBooking) booking = availability.existingBooking;
+    renderInstitutionBookingState();
+    renderConsultationDates();
+  } catch (err) {
+    showError(err.message);
+  }
+}
+
+function renderInstitutionBookingState() {
+  const row = document.getElementById('consultChoiceRow');
+  const box = document.getElementById('existingBookingBox');
+  const area = document.getElementById('bookingArea');
+  if (!row || !box || !area) return;
+
+  if (booking) {
+    consultationRequired = true;
+    row.classList.add('hidden');
+    area.classList.add('hidden');
+    box.classList.remove('hidden');
+    box.innerHTML = `<strong>Konsultasi sudah dijadwalkan</strong>${esc(booking.dateLabel)}, ${esc(booking.start)}–${esc(booking.end)} WIB · Breakout ${esc(booking.room)}`;
+  } else {
+    box.classList.add('hidden');
+    row.classList.remove('hidden');
+    document.getElementById('consultNo').classList.toggle('active', consultationRequired === false);
+    document.getElementById('consultYes').classList.toggle('active', consultationRequired === true);
+    area.classList.toggle('hidden', consultationRequired !== true);
+  }
+}
+
+function renderConsultationDates() {
+  const select = document.getElementById('bookingDate');
+  if (!select || !availability) return;
+  select.innerHTML = '<option value="">Pilih tanggal</option>' + (availability.dates || []).map(d => `<option value="${escAttr(d.date)}">${esc(d.label)}</option>`).join('');
+  document.getElementById('slotArea').innerHTML = '<span style="color:var(--muted);font-size:12px">Pilih tanggal terlebih dahulu.</span>';
+}
+
+function renderSlots() {
+  const date = document.getElementById('bookingDate').value;
+  const root = document.getElementById('slotArea');
+  selectedSessionId = '';
+  if (!date || !availability) {
+    root.innerHTML = '<span style="color:var(--muted);font-size:12px">Pilih tanggal terlebih dahulu.</span>';
+    return;
+  }
+  const d = availability.dates.find(x => x.date === date);
+  if (!d) return;
+  root.innerHTML = d.sessions.map(s => {
+    const disabled = s.remaining <= 0;
+    return `<button type="button" class="slot-card ${disabled ? 'disabled' : ''}" ${disabled ? 'disabled' : ''} onclick="selectConsultationSlot('${jsEsc(s.sessionId)}',this)"><span class="slot-time">${esc(s.start)}–${esc(s.end)}</span><span class="slot-capacity">${fmt(s.booked)}/${fmt(s.total)}</span></button>`;
+  }).join('');
+}
+
+function selectConsultationSlot(sessionId, el) {
+  selectedSessionId = sessionId;
+  document.querySelectorAll('#slotArea .slot-card').forEach(x => x.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// -----------------------------------------------------------------------------
+// SUBMISSION
+// -----------------------------------------------------------------------------
+
+function openConfirm() {
+  if (!canEdit()) return;
+  const nama = document.getElementById('repName').value.trim();
+  const unit = document.getElementById('repUnit').value.trim();
+  const kontak = document.getElementById('repContact').value.trim();
+  if (!nama || !unit || !kontak) return showError('Lengkapi nama, jabatan/unit kerja, dan nomor kontak.');
+  if (consultationRequired === null) return showError('Pilih apakah perlu konsultasi.');
+  if (consultationRequired && !booking && !selectedSessionId) return showError('Pilih jadwal konsultasi.');
+  if (!document.getElementById('statement').checked) return showError('Centang pernyataan sebelum mengirim.');
+
+  document.getElementById('rInst').textContent = session.name;
+  document.getElementById('rActive').textContent = sourceUploads.filter(r => r.decision === 'ACTIVE').length;
+  document.getElementById('rCancelled').textContent = sourceUploads.filter(r => r.decision === 'CANCELLED').length;
+  document.getElementById('rNew').textContent = sourceUploads.filter(r => r.origin === 'NEW' && r.decision === 'ACTIVE').length;
+  document.getElementById('rRep').textContent = `${nama} · ${unit}`;
+
+  const zoom = document.getElementById('zoom');
+  if (booking) {
+    document.getElementById('rConsult').textContent = `${booking.dateLabel}, ${booking.start}–${booking.end} WIB · Breakout ${booking.room}`;
+    renderZoomBox();
+    zoom.classList.remove('hidden');
+  } else if (consultationRequired && selectedSessionId) {
+    const s = findSelectedAvailabilitySession(selectedSessionId);
+    document.getElementById('rConsult').textContent = s ? `${s.dateLabel}, ${s.start}–${s.end} WIB` : 'Jadwal dipilih';
+    renderZoomBox();
+    zoom.classList.remove('hidden');
+  } else {
+    document.getElementById('rConsult').textContent = 'Tidak dijadwalkan';
+    zoom.classList.add('hidden');
+  }
+
+  document.getElementById('confirmModal').classList.remove('hidden');
+}
+
+function renderZoomBox() {
+  const zoom = document.getElementById('zoom');
+  zoom.innerHTML = `<strong>Zoom konsultasi</strong><br>Meeting ID: ${esc(config.zoomMeetingId || '')}<br>Passcode: ${esc(config.zoomPasscode || '')}<br>${config.zoomUrl ? `<a href="${escAttr(config.zoomUrl)}" target="_blank" rel="noopener">Buka Zoom Meeting</a>` : ''}`;
+}
+
+function findSelectedAvailabilitySession(sessionId) {
+  for (const d of availability?.dates || []) {
+    const s = d.sessions.find(x => x.sessionId === sessionId);
+    if (s) return { ...s, date:d.date, dateLabel:d.label };
+  }
+  return null;
+}
+
+function closeConfirm() {
+  document.getElementById('confirmModal').classList.add('hidden');
+}
+
+async function submitClarification() {
+  if (!session || !canEdit()) return;
+  closeConfirm();
+  showLoading('Mengirim klarifikasi...', 'Mohon tunggu, keputusan sedang disimpan.');
+  try {
+    if (consultationRequired && !booking) {
+      booking = await apiPost('bookConsultation', {
+        institutionId: session.institutionId,
+        sessionId: selectedSessionId,
+        createdBy: 'INSTITUTION'
+      });
+    }
+
+    await apiPost('submitClarification', {
+      institutionId: session.institutionId,
+      namaPerwakilan: document.getElementById('repName').value.trim(),
+      jabatanUnit: document.getElementById('repUnit').value.trim(),
+      nomorKontak: document.getElementById('repContact').value.trim(),
+      catatan: document.getElementById('note').value.trim(),
+      consultationRequired: !!consultationRequired
+    });
+
+    await reloadCurrentInstitution(false);
+    alert('Klarifikasi berhasil dikirim.');
+  } catch (err) {
+    if (err.code === 'SESSION_FULL') {
+      await loadConsultationAvailability();
+      renderSlots();
+    }
+    showError(err.message);
+  } finally {
+    await hideLoading();
+  }
+}
+
+async function reloadCurrentInstitution(showLoader = true) {
+  if (!session) return;
+  if (showLoader) showLoading('Memuat data terbaru...', 'Sinkronisasi dengan backend sedang dilakukan.');
+  try {
+    const action = mode === 'internal' ? 'internalInstitution' : 'institution';
+    const data = await apiGet(action, {
+      institutionId: session.institutionId,
+      mode: mode === 'internal' ? 'INTERNAL' : 'INSTITUTION',
+      browserSessionId,
+      track: '0'
+    });
+    applyInstitutionPayload(data);
+  } finally {
+    if (showLoader) await hideLoading();
+  }
+}
+
+// -----------------------------------------------------------------------------
+// INTERNAL SCHEDULE
+// -----------------------------------------------------------------------------
+
+async function loadInternalSchedule() {
+  showLoading('Memuat jadwal breakout...', 'Jadwal dan booking aktif sedang disiapkan.');
+  try {
+    internalScheduleData = await apiGet('internalSchedule');
+    renderInternalLandingSchedule();
+  } catch (err) {
+    if (err.code === 'INTERNAL_AUTH_REQUIRED' || err.code === 'INTERNAL_SESSION_EXPIRED') {
+      internalToken = '';
+      sessionStorage.removeItem(INTERNAL_TOKEN_KEY);
+      showInternalLogin();
+    } else {
+      document.getElementById('internalLandingSchedule').innerHTML = `<div class="empty"><strong>Jadwal belum dapat dimuat</strong>${esc(err.message)}</div>`;
+    }
+  } finally {
+    await hideLoading();
+  }
+}
+
+function renderInternalLandingSchedule() {
+  const root = document.getElementById('internalLandingSchedule');
+  if (!root) return;
+  if (!internalScheduleData?.dates?.length) {
+    root.innerHTML = '<div class="empty"><strong>Belum ada jadwal aktif</strong>Atur JADWAL_KONSULTASI pada backend.</div>';
+    return;
+  }
+
+  const roomCount = internalScheduleData.roomCount || 6;
+  const cap = internalScheduleData.roomCapacity || 4;
+
+  root.innerHTML = internalScheduleData.dates.map(d => {
+    const total = d.sessions.reduce((s, ses) => s + ses.rooms.reduce((x, r) => x + r.bookings.length, 0), 0);
+    const roomHtml = Array.from({ length:roomCount }, (_, idx) => {
+      const roomNo = idx + 1;
+      const cells = d.sessions.map(ses => {
+        const room = ses.rooms.find(r => Number(r.room) === roomNo) || { room:roomNo, bookings:[] };
+        const count = room.bookings.length;
+        const clickable = count > 0;
+        return `<div class="room-session ${count >= cap ? 'full' : ''} ${count === 0 ? 'empty' : ''}" ${clickable ? `onclick="openRoomDetail('${jsEsc(d.date)}','${jsEsc(ses.sessionId)}',${roomNo})"` : ''}><div class="room-session-time">${esc(ses.start)}–${esc(ses.end)}</div><div class="room-session-count">${count}/${cap}</div></div>`;
+      }).join('');
+      return `<div class="room-column"><div class="room-head"><strong>Breakout ${roomNo}</strong><span>Maks. ${cap} instansi / sesi</span></div>${cells}</div>`;
+    }).join('');
+    return `<div class="schedule-date-block"><div class="schedule-date-title"><strong>${esc(d.label)}</strong><span>${total} booking tercatat</span></div><div class="room-board">${roomHtml}</div></div>`;
+  }).join('');
+}
+
+function openRoomDetail(date, sessionId, roomNo) {
+  const d = internalScheduleData?.dates?.find(x => x.date === date);
+  const ses = d?.sessions?.find(x => x.sessionId === sessionId);
+  const room = ses?.rooms?.find(r => Number(r.room) === Number(roomNo));
+  if (!d || !ses || !room) return;
+
+  document.getElementById('roomDetailTitle').textContent = `Breakout ${roomNo}`;
+  document.getElementById('roomDetailSubtitle').textContent = `${d.label} · ${ses.start}–${ses.end} WIB · ${room.bookings.length}/${internalScheduleData.roomCapacity}`;
+  const root = document.getElementById('roomBookingList');
+  root.innerHTML = room.bookings.length
+    ? room.bookings.map(b => `<div class="booking-item"><div><div class="booking-name">${esc(b.institutionName)}</div><div class="booking-meta">Status booking: Aktif</div></div><button class="btn btn-secondary" onclick="openInstitutionFromBooking('${jsEsc(b.institutionId)}')">Buka instansi</button></div>`).join('')
+    : '<div class="booking-empty">Belum ada instansi pada breakout room ini.</div>';
+  document.getElementById('roomDetailModal').classList.remove('hidden');
+}
+
+function closeRoomDetail() {
+  document.getElementById('roomDetailModal').classList.add('hidden');
+}
+
+async function openInstitutionFromBooking(institutionId) {
+  const inst = institutions.find(i => i.institutionId === institutionId);
+  if (!inst) return showError('Instansi tidak ditemukan pada MASTER_INSTANSI.');
+  closeRoomDetail();
+  mode = 'internal';
+  document.getElementById('modeInstitution').classList.remove('active');
+  document.getElementById('modeInternal').classList.add('active');
+  document.getElementById('institutionInput').value = inst.name;
+  await switchInternalPage('assistance');
+  await loadSelectedInstitution();
+}
+
+// -----------------------------------------------------------------------------
+// INTERNAL ASSISTANCE
+// -----------------------------------------------------------------------------
+
+function renderInternal() {
+  if (!session || mode !== 'internal') return;
+  const set = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
+  const currentBooking = booking;
+
+  set('internalContextTitle', session.name);
+  set('iqAccess', session.statusAkses || '—');
+  set('iqActive', sourceUploads.filter(r => r.decision === 'ACTIVE').length);
+  set('iqSubmission', internalData?.clarificationHistory?.length ? 'Sudah dikirim' : 'Belum dikirim');
+  set('iqBooking', currentBooking ? `${currentBooking.start}–${currentBooking.end} · BR ${currentBooking.room}` : 'Belum dijadwalkan');
+  set('srcUploads', sourceUploads.length);
+  set('srcApproved', sourceUploads.filter(r => normalize(r.statusPJ) === 'disetujui seluruhnya').length);
+  set('srcPartial', sourceUploads.filter(r => normalize(r.statusPJ) === 'disetujui sebagian').length);
+  set('srcPending', sourceUploads.filter(r => normalize(r.statusPJ).includes('belum')).length);
+  set('srcRevision', config.sourceRevision || '—');
+
+  let guide = '';
+  if (canEdit()) {
+    if (normalize(session.statusAkses) === 'terdapat usulan pending') guide = '<strong>Masih ada usulan yang perlu diselesaikan.</strong> Fokuskan pendampingan pada keputusan akhir usulan penghapusan yang masih pending.';
+    else guide = '<strong>Instansi dapat melakukan perubahan.</strong> Bantu PIC memeriksa usulan lama. Ubah hanya data yang tidak jadi dihapus atau tambahkan Batch ID lain bila memang terlewat.';
+  } else {
+    guide = '<strong>Instansi hanya dapat melihat data.</strong> Gunakan log upload dan Status Penanggung Jawab untuk menjelaskan kondisi data. Jangan melakukan perubahan.';
+  }
+  if (currentBooking) guide += `<br><br><strong>Konsultasi:</strong> ${esc(currentBooking.dateLabel)}, ${esc(currentBooking.start)}–${esc(currentBooking.end)} WIB · Breakout ${esc(currentBooking.room)}.`;
+  document.getElementById('guidanceBox').innerHTML = guide;
+
+  const activity = internalData?.activity || [];
+  document.getElementById('activityList').innerHTML = activity.length
+    ? activity.slice(0,8).map(a => `<div class="activity"><strong>${esc(activityLabel(a.action))}</strong><span>${esc(a.timestamp)}${a.batchId ? ' · Batch ID ' + esc(a.batchId) : ''}${a.actorName ? ' · ' + esc(a.actorName) : ''}</span></div>`).join('')
+    : '<div class="activity"><span>Belum ada aktivitas.</span></div>';
+
+  const note = internalData?.internalNote;
+  document.getElementById('internalNote').value = note?.note || '';
+  document.getElementById('noteMeta').textContent = note ? `Terakhir diperbarui ${note.updatedAt}${note.updatedBy ? ' oleh ' + note.updatedBy : ''}` : 'Belum ada catatan tersimpan.';
+
+  const access = internalData?.accessLog || {};
+  document.getElementById('accessBody').innerHTML = `<tr><td>${esc(session.name)}</td><td>${esc(session.statusAkses || '—')}</td><td>${esc(access.first || '—')}</td><td>${esc(access.last || '—')}</td><td>${fmt(access.count || 0)}</td></tr>`;
+
+  renderDeletionList('internal');
+  renderUploadTable('internal');
+}
+
+async function saveInternalNote() {
+  if (!session) return;
+  try {
+    const result = await apiPost('saveInternalNote', {
+      institutionId: session.institutionId,
+      note: document.getElementById('internalNote').value,
+      updatedBy: 'Tim Internal'
+    });
+    internalData.internalNote = { note:result.note, updatedAt:new Date().toLocaleString('id-ID'), updatedBy:result.updatedBy };
+    renderInternal();
+  } catch (err) {
+    if (err.code === 'INTERNAL_AUTH_REQUIRED' || err.code === 'INTERNAL_SESSION_EXPIRED') {
+      internalToken = '';
+      sessionStorage.removeItem(INTERNAL_TOKEN_KEY);
+      showInternalLogin();
+    } else {
+      showError(err.message);
+    }
+  }
+}
+
+async function refreshSourceDemo() {
+  await reloadCurrentInstitution(true);
+}
+
+function copyGuidance() {
+  const text = `${session?.name || ''}\nStatus akses: ${session?.statusAkses || '—'}\n\n${document.getElementById('guidanceBox').innerText}`;
+  navigator.clipboard?.writeText(text).then(() => alert('Ringkasan disalin.')).catch(() => showError('Clipboard tidak tersedia.'));
+}
+
+function activityLabel(action) {
+  const map = {
+    OPEN_INTERNAL:'Tampilan internal dibuka',
+    DELETE_ACTIVE:'Usulan penghapusan diaktifkan',
+    DELETE_CANCELLED:'Usulan penghapusan dibatalkan',
+    SUBMIT_CLARIFICATION:'Klarifikasi dikirim',
+    BOOK_CONSULTATION:'Konsultasi dijadwalkan',
+    SAVE_INTERNAL_NOTE:'Catatan internal diperbarui'
+  };
+  return map[action] || action || 'Aktivitas';
+}
+
+// -----------------------------------------------------------------------------
+// EXCEL EXPORT (REFERENCE ONLY)
+// -----------------------------------------------------------------------------
+
+let xlsxPromise = null;
+function ensureXLSX() {
+  if (window.XLSX) return Promise.resolve(window.XLSX);
+  if (xlsxPromise) return xlsxPromise;
+  xlsxPromise = new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    s.onload = () => window.XLSX ? resolve(window.XLSX) : reject(new Error('Library Excel gagal dimuat.'));
+    s.onerror = () => reject(new Error('Library Excel gagal dimuat.'));
+    document.head.appendChild(s);
+  });
+  return xlsxPromise;
+}
+
+async function exportExcel(button) {
+  if (!session) return;
+  const old = button.textContent;
+  button.disabled = true;
+  button.textContent = 'Menyiapkan...';
+  try {
+    const XLSX = await ensureXLSX();
+    const rows = sourceUploads.map(r => ({
+      'Batch ID': String(r.batchId),
+      'Waktu Upload': r.time,
+      'Nama Pelayanan': r.service,
+      'Nama Survei': r.survey,
+      'Level 1': r.level1,
+      'Level 2': r.level2,
+      'Responden dalam File': r.respondents,
+      'Responden untuk Evaluasi': r.cutoff,
+      'Status Penanggung Jawab': r.statusPJ,
+      'Status Usulan Saat Ini': r.decision === 'ACTIVE' ? 'Diajukan untuk Dihapus' : r.decision === 'CANCELLED' ? 'Dibatalkan' : 'Tidak Diajukan'
+    }));
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
+      ['KETERANGAN'],
+      ['File ini adalah salinan referensi. Perubahan tetap dilakukan melalui website.'],
+      ['Batch ID dipertahankan persis seperti sumber.'],
+      ['Status Penanggung Jawab merupakan kondisi saat file diunduh dan dapat berubah di portal.']
+    ]), 'KETERANGAN');
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), 'SEMUA_LOG_UPLOAD');
+    XLSX.writeFile(wb, `Data_SKM_${session.institutionId}.xlsx`, { compression:true });
+  } catch (err) {
+    showError(err.message);
+  } finally {
+    button.disabled = false;
+    button.textContent = old;
+  }
+}
+
+// -----------------------------------------------------------------------------
+// SMALL HELPERS
+// -----------------------------------------------------------------------------
+
+function fmt(n) { return new Intl.NumberFormat('id-ID').format(Number(n || 0)); }
+function sum(rows, key) { return rows.reduce((s,r) => s + Number(r[key] || 0), 0); }
+function normalize(v) { return String(v ?? '').trim().toLowerCase().replace(/\s+/g,' '); }
+function safeId(v) { return String(v).replace(/[^A-Za-z0-9_-]/g,'_'); }
+function jsEsc(v) { return String(v).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\r?\n/g,' '); }
+function esc(v) { return String(v ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;'); }
+function escAttr(v) { return esc(v).replaceAll("'",'&#39;'); }
+function showError(message) { alert(message || 'Terjadi kesalahan.'); }
+
+function closeRoomDetail() { document.getElementById('roomDetailModal').classList.add('hidden'); }
+
+// -----------------------------------------------------------------------------
+// INIT
+// -----------------------------------------------------------------------------
+
+document.addEventListener('DOMContentLoaded', initializePortal);
+</script>
+
+</body>
+</html>

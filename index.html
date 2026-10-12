@@ -2295,7 +2295,7 @@ function renderUploadTable(scope) {
     const tr = document.createElement('tr');
     if (r.decision === 'CANCELLED') tr.className = 'log-cancelled';
     let status = 'Tidak diajukan';
-    if (r.decision === 'ACTIVE') status = r.origin === 'NEW' ? 'Baru diajukan' : 'Diajukan untuk dihapus';
+    if (r.decision === 'ACTIVE') status = r.origin === 'NEW' ? 'Penghapusan baru' : 'Diajukan untuk dihapus';
     if (r.decision === 'CANCELLED') status = 'Dibatalkan';
     const actor = scope === 'internal' ? 'INTERNAL' : 'INSTITUTION';
 

@@ -119,6 +119,18 @@ tbody tr:last-child td{border-bottom:0}.log-cancelled{opacity:.38;background:#fa
 .quick{padding:11px 12px}.quick+.quick{border-left:1px solid var(--line)}.quick .q-label{font-size:10px;color:var(--muted)}.quick .q-value{font-size:16px;font-weight:700;margin-top:2px}
 .guidance{padding:12px;border:1px solid #b2ddff;background:var(--bluesoft);border-radius:9px;color:#1849a9;font-size:12px}
 .guidance strong{display:block;margin-bottom:3px}
+.institution-source-note{
+  margin-top:12px;padding:12px;border:1px solid var(--line);
+  border-radius:9px;background:#fcfcfd
+}
+.institution-source-note-title{font-size:12px;font-weight:700;color:#344054}
+.institution-source-note-help{margin-top:2px;font-size:10px;color:var(--muted)}
+.institution-source-note-list{display:grid;gap:8px;margin-top:9px}
+.institution-source-note-item{
+  padding:9px 10px;border-left:3px solid #d0d5dd;background:#fff;
+  color:#475467;font-size:12px;line-height:1.55;white-space:pre-wrap
+}
+.institution-source-note-empty{margin-top:8px;color:var(--muted);font-size:11px}
 .internal-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:11px}
 .activity-list{display:grid;gap:8px}
 .activity{padding:8px 0;border-bottom:1px solid var(--line);font-size:11px}.activity:last-child{border-bottom:0}.activity strong{display:block;color:#344054}.activity span{color:var(--muted)}
@@ -1096,6 +1108,17 @@ tbody tr:last-child td{border-bottom:0}.log-cancelled{opacity:.38;background:#fa
             <h3>Apa yang perlu disampaikan</h3>
             <div class="sub">Gunakan sebagai panduan singkat saat berbicara dengan PIC instansi.</div>
             <div id="guidanceBox" class="guidance"></div>
+
+            <div class="institution-source-note">
+              <div class="institution-source-note-title">Catatan dari instansi</div>
+              <div class="institution-source-note-help">
+                Catatan sumber dari instansi. Hanya untuk dibaca oleh Tim Internal dan tidak dapat diubah dari portal.
+              </div>
+              <div id="institutionSourceNoteList" class="institution-source-note-list">
+                <div class="institution-source-note-empty">Tidak ada catatan dari instansi.</div>
+              </div>
+            </div>
+
             <div class="internal-actions">
               <button class="btn btn-secondary" onclick="copyGuidance()">Salin ringkasan</button>
               <button class="btn btn-secondary" onclick="exportExcel(this)">Unduh data</button>
@@ -2451,6 +2474,20 @@ function renderInternal() {
   }
   if (currentBooking) guide += `<br><br><strong>Konsultasi:</strong> ${esc(currentBooking.dateLabel)}, ${esc(currentBooking.start)}–${esc(currentBooking.end)} WIB · Breakout ${esc(currentBooking.room)}.`;
   document.getElementById('guidanceBox').innerHTML = guide;
+
+  const institutionNotes = internalData?.institutionNotes || [];
+  const sourceNoteRoot = document.getElementById('institutionSourceNoteList');
+  if (sourceNoteRoot) {
+    sourceNoteRoot.innerHTML = institutionNotes.length
+      ? institutionNotes
+          .map((n, idx) => `
+            <div class="institution-source-note-item">
+              ${institutionNotes.length > 1 ? `<strong>Catatan ${idx + 1}</strong><br>` : ''}
+              ${esc(n.note)}
+            </div>`)
+          .join('')
+      : '<div class="institution-source-note-empty">Tidak ada catatan dari instansi.</div>';
+  }
 
   const activity = internalData?.activity || [];
   document.getElementById('activityList').innerHTML = activity.length

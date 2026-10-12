@@ -70,6 +70,10 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#1570ef;box-sh
 .section-head h2{margin:0;font-size:20px}.desc{margin:4px 0 0;color:var(--muted);font-size:13px}
 .fast{border:1px solid var(--line);background:#fcfcfd;border-radius:11px;padding:13px 15px;margin-bottom:14px}.fast strong{display:block}.fast p{margin:3px 0 9px;color:var(--muted);font-size:12px}
 .filters{display:grid;grid-template-columns:1.5fr 1fr auto;gap:8px;margin-bottom:11px}
+
+.upload-filters{
+  grid-template-columns:minmax(250px,1.5fr) repeat(3,minmax(155px,.8fr)) auto;
+}
 .summary-line{display:flex;gap:16px;flex-wrap:wrap;margin:11px 0 13px;color:var(--muted);font-size:12px}.summary-line strong{color:var(--text)}
 
 .group-list{display:grid;gap:11px}
@@ -102,6 +106,19 @@ th{padding:9px 11px;text-align:left;color:#475467;background:#f9fafb;border-bott
 td{padding:10px 11px;border-bottom:1px solid var(--line);vertical-align:middle}
 tbody tr:last-child td{border-bottom:0}.log-cancelled{opacity:.38;background:#fafafa}
 .num{text-align:right;font-variant-numeric:tabular-nums}.raw-id{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#475467;font-size:11px}
+.log-detail-trigger{
+  margin-top:4px;display:inline-flex;align-items:center;gap:4px;border:0;
+  background:transparent;padding:0;color:var(--blue);font-size:10px;
+  font-weight:650;cursor:pointer
+}
+.log-detail-trigger:hover{text-decoration:underline}
+.log-detail-row td{padding:0!important;border-bottom:1px solid var(--line);background:#fafafa}
+.log-detail-box{display:none;padding:10px 12px 11px}
+.log-detail-box.open{display:block}
+.log-detail-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.log-detail-item .label{font-size:10px;color:var(--muted);margin-bottom:2px}
+.log-detail-item .value{font-size:11px;color:#344054;font-weight:650;word-break:break-word}
+
 
 .form-section{margin-top:30px;padding-top:25px;border-top:1px solid var(--line)}
 .form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.full{grid-column:1/-1}
@@ -273,6 +290,8 @@ tbody tr:last-child td{border-bottom:0}.log-cancelled{opacity:.38;background:#fa
 }
 
 @media(max-width:950px){
+  .upload-filters{grid-template-columns:1fr 1fr}
+  .upload-filters .btn{width:100%}
     
   .topbar{display:block}.mode-switch{margin-top:16px}
   .scorecards{grid-template-columns:repeat(2,1fr)}
@@ -284,6 +303,8 @@ tbody tr:last-child td{border-bottom:0}.log-cancelled{opacity:.38;background:#fa
   .form-grid,.booking,.detail-grid{grid-template-columns:1fr}
 }
 @media(max-width:620px){
+  .log-detail-grid{grid-template-columns:1fr}
+  .upload-filters{grid-template-columns:1fr}
   
   .page{padding:24px 15px 46px}.selector,.filters,.scorecards,.quick-cards{grid-template-columns:1fr}
   .score+.score,.quick+.quick{border-left:0;border-top:1px solid var(--line)}
@@ -1024,14 +1045,24 @@ tbody tr:last-child td{border-bottom:0}.log-cancelled{opacity:.38;background:#fa
           </div>
         </div>
 
-        <div class="filters">
+        <div class="filters upload-filters">
           <input id="uploadSearch" type="search" placeholder="Cari Batch ID, survei, atau pelayanan..." oninput="renderUploadTable('institution')">
+
+          <select id="uploadLevel1" onchange="updateUploadLevel2Options('institution'); renderUploadTable('institution')">
+            <option value="">Semua Level 1</option>
+          </select>
+
+          <select id="uploadLevel2" onchange="renderUploadTable('institution')">
+            <option value="">Semua Level 2</option>
+          </select>
+
           <select id="uploadFilter" onchange="renderUploadTable('institution')">
             <option value="">Semua status usulan</option>
             <option value="active">Diajukan untuk dihapus</option>
             <option value="cancelled">Dibatalkan</option>
             <option value="none">Tidak diajukan</option>
           </select>
+
           <button class="btn btn-secondary" onclick="resetUploadFilters('institution')">Reset</button>
         </div>
 
@@ -1285,14 +1316,24 @@ tbody tr:last-child td{border-bottom:0}.log-cancelled{opacity:.38;background:#fa
           </div>
         </div>
 
-        <div class="filters">
+        <div class="filters upload-filters">
           <input id="internalUploadSearch" type="search" placeholder="Cari Batch ID, survei, atau pelayanan..." oninput="renderUploadTable('internal')">
+
+          <select id="internalUploadLevel1" onchange="updateUploadLevel2Options('internal'); renderUploadTable('internal')">
+            <option value="">Semua Level 1</option>
+          </select>
+
+          <select id="internalUploadLevel2" onchange="renderUploadTable('internal')">
+            <option value="">Semua Level 2</option>
+          </select>
+
           <select id="internalUploadFilter" onchange="renderUploadTable('internal')">
             <option value="">Semua status usulan</option>
             <option value="active">Diajukan untuk dihapus</option>
             <option value="cancelled">Dibatalkan</option>
             <option value="none">Tidak diajukan</option>
           </select>
+
           <button class="btn btn-secondary" onclick="resetUploadFilters('internal')">Reset</button>
         </div>
 
@@ -1998,6 +2039,8 @@ function renderAll() {
 
   renderDeletionSummary();
   renderDeletionList('institution');
+  populateUploadLevelFilters('institution');
+  populateUploadLevelFilters('internal');
   renderUploadTable('institution');
   renderClarificationHistory();
   renderInstitutionAccessLog();
@@ -2101,24 +2144,147 @@ function toggleDetail(scope, batchId) {
 
 function getUploadControls(scope) {
   return scope === 'internal'
-    ? { search:'internalUploadSearch', filter:'internalUploadFilter', body:'internalUploadBody' }
-    : { search:'uploadSearch', filter:'uploadFilter', body:'uploadBody' };
+    ? {
+        search:'internalUploadSearch',
+        level1:'internalUploadLevel1',
+        level2:'internalUploadLevel2',
+        filter:'internalUploadFilter',
+        body:'internalUploadBody'
+      }
+    : {
+        search:'uploadSearch',
+        level1:'uploadLevel1',
+        level2:'uploadLevel2',
+        filter:'uploadFilter',
+        body:'uploadBody'
+      };
 }
+
+function uploadUniqueValues_(values) {
+  return [...new Set(
+    values
+      .map(v => String(v || '').trim())
+      .filter(Boolean)
+  )].sort((a, b) => a.localeCompare(b, 'id'));
+}
+
+function setUploadSelectOptions_(select, placeholder, values, preferredValue) {
+  if (!select) return '';
+
+  const validValues = uploadUniqueValues_(values);
+  const nextValue = validValues.includes(preferredValue) ? preferredValue : '';
+
+  select.innerHTML =
+    `<option value="">${esc(placeholder)}</option>` +
+    validValues
+      .map(v => `<option value="${escAttr(v)}">${esc(v)}</option>`)
+      .join('');
+
+  select.value = nextValue;
+  return nextValue;
+}
+
+function populateUploadLevelFilters(scope) {
+  const c = getUploadControls(scope);
+  const level1El = document.getElementById(c.level1);
+  const level2El = document.getElementById(c.level2);
+
+  if (!level1El || !level2El) return;
+
+  const currentLevel1 = level1El.value || '';
+  const currentLevel2 = level2El.value || '';
+
+  const selectedLevel1 = setUploadSelectOptions_(
+    level1El,
+    'Semua Level 1',
+    sourceUploads.map(r => r.level1),
+    currentLevel1
+  );
+
+  const level2Rows = selectedLevel1
+    ? sourceUploads.filter(r => String(r.level1 || '').trim() === selectedLevel1)
+    : sourceUploads;
+
+  setUploadSelectOptions_(
+    level2El,
+    'Semua Level 2',
+    level2Rows.map(r => r.level2),
+    currentLevel2
+  );
+}
+
+function updateUploadLevel2Options(scope) {
+  const c = getUploadControls(scope);
+  const level1El = document.getElementById(c.level1);
+  const level2El = document.getElementById(c.level2);
+
+  if (!level1El || !level2El) return;
+
+  const selectedLevel1 = level1El.value || '';
+
+  const level2Rows = selectedLevel1
+    ? sourceUploads.filter(r => String(r.level1 || '').trim() === selectedLevel1)
+    : sourceUploads;
+
+  setUploadSelectOptions_(
+    level2El,
+    'Semua Level 2',
+    level2Rows.map(r => r.level2),
+    ''
+  );
+}
+
 
 function resetUploadFilters(scope) {
   const c = getUploadControls(scope);
+
   document.getElementById(c.search).value = '';
   document.getElementById(c.filter).value = '';
+
+  const level1El = document.getElementById(c.level1);
+  const level2El = document.getElementById(c.level2);
+
+  if (level1El) level1El.value = '';
+  if (level2El) level2El.value = '';
+
+  populateUploadLevelFilters(scope);
   renderUploadTable(scope);
 }
 
 function renderUploadTable(scope) {
   if (!session) return;
   const c = getUploadControls(scope);
-  const q = (document.getElementById(c.search)?.value || '').toLowerCase().trim();
+
+  const q = (document.getElementById(c.search)?.value || '')
+    .toLowerCase()
+    .trim();
+
+  const level1 = document.getElementById(c.level1)?.value || '';
+  const level2 = document.getElementById(c.level2)?.value || '';
   const filter = document.getElementById(c.filter)?.value || '';
+
   let rows = [...sourceUploads];
-  if (q) rows = rows.filter(r => `${r.batchId} ${r.survey} ${r.service}`.toLowerCase().includes(q));
+
+  if (q) {
+    rows = rows.filter(r =>
+      `${r.batchId} ${r.survey} ${r.service}`
+        .toLowerCase()
+        .includes(q)
+    );
+  }
+
+  if (level1) {
+    rows = rows.filter(r =>
+      String(r.level1 || '').trim() === level1
+    );
+  }
+
+  if (level2) {
+    rows = rows.filter(r =>
+      String(r.level2 || '').trim() === level2
+    );
+  }
+
   if (filter === 'active') rows = rows.filter(r => r.decision === 'ACTIVE');
   if (filter === 'cancelled') rows = rows.filter(r => r.decision === 'CANCELLED');
   if (filter === 'none') rows = rows.filter(r => r.decision === 'NONE');
@@ -2160,7 +2326,13 @@ function renderUploadTable(scope) {
       </div>`;
     const hideAction = scope === 'institution' && !canEdit();
     tr.innerHTML = `
-      <td><span class="raw-id">${esc(r.batchId)}</span></td>
+      <td>
+        <span class="raw-id">${esc(r.batchId)}</span><br>
+        <button type="button" class="log-detail-trigger"
+          onclick="toggleUploadLogDetail('${scope}','${jsEsc(r.batchId)}',this)">
+          Lihat detail
+        </button>
+      </td>
       <td>${esc(r.time)}</td>
       <td><strong>${esc(r.service || '—')}</strong><br><span style="color:var(--muted)">${esc(r.survey || '—')}</span></td>
       <td class="num">${fmt(r.respondents)}</td>
@@ -2169,8 +2341,45 @@ function renderUploadTable(scope) {
       <td>${status}${r.origin === 'NEW' ? ' <span class="new-tag">Baru</span>' : ''}</td>
       <td class="${hideAction ? 'hidden' : ''}">${hideAction ? '' : action}</td>`;
     body.appendChild(tr);
+
+    const detailTr = document.createElement('tr');
+    detailTr.className = 'log-detail-row';
+    detailTr.innerHTML = `
+      <td colspan="8">
+        <div id="upload-log-detail-${scope}-${safeId(r.batchId)}" class="log-detail-box">
+          <div class="log-detail-grid">
+            <div class="log-detail-item">
+              <div class="label">Level 1</div>
+              <div class="value">${esc(r.level1 || '—')}</div>
+            </div>
+            <div class="log-detail-item">
+              <div class="label">Level 2</div>
+              <div class="value">${esc(r.level2 || '—')}</div>
+            </div>
+            <div class="log-detail-item">
+              <div class="label">Batch ID</div>
+              <div class="value raw-id">${esc(r.batchId)}</div>
+            </div>
+          </div>
+        </div>
+      </td>`;
+    body.appendChild(detailTr);
   });
 }
+
+
+function toggleUploadLogDetail(scope, batchId, button) {
+  const box = document.getElementById(
+    `upload-log-detail-${scope}-${safeId(batchId)}`
+  );
+  if (!box) return;
+
+  const isOpen = box.classList.toggle('open');
+  if (button) {
+    button.textContent = isOpen ? 'Tutup detail' : 'Lihat detail';
+  }
+}
+
 
 async function changeDecision(batchId, decision, actorType) {
   if (!session || !canEdit()) return;

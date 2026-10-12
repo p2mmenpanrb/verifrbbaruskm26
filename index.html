@@ -490,6 +490,18 @@ tbody tr:last-child td{border-bottom:0}.log-cancelled{opacity:.38;background:#fa
   opacity:.6;
 }
 
+.room-session.is-current-session{
+  background:#ecfdf3;
+  box-shadow:inset 3px 0 0 #12b76a;
+  opacity:1;
+}
+.room-session.is-current-session:hover{background:#e3f9ec}
+.room-session.is-next-session{
+  background:#fffaeb;
+  box-shadow:inset 3px 0 0 #f79009;
+  opacity:1;
+}
+.room-session.is-next-session:hover{background:#fff4cc}
 .room-session.has-new-booking{
   background:#eff8ff;
   box-shadow:inset 3px 0 0 #2e90fa;
@@ -509,6 +521,24 @@ tbody tr:last-child td{border-bottom:0}.log-cancelled{opacity:.38;background:#fa
   font-size:9px;
   line-height:1.3;
   font-weight:750;
+}
+
+.session-status-badge{
+  display:inline-flex;
+  align-items:center;
+  margin-top:4px;
+  padding:2px 6px;
+  border-radius:999px;
+  font-size:9px;
+  line-height:1.3;
+  font-weight:750;
+}
+.session-status-badge.current{background:#d1fadf;color:#067647}
+.session-status-badge.next{background:#fef0c7;color:#b54708}
+.room-session.has-new-booking.is-current-session,
+.room-session.has-new-booking.is-next-session{
+  background:#eff8ff;
+  box-shadow:inset 3px 0 0 #2e90fa;
 }
 .internal-new-booking-summary{
   display:inline-flex;
@@ -2577,6 +2607,78 @@ async function loadInternalSchedule() {
   }
 }
 
+
+function jakartaNowParts_(now = new Date()) {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Jakarta',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23'
+  }).formatToParts(now);
+
+  const map = {};
+  parts.forEach(p => {
+    if (p.type !== 'literal') map[p.type] = p.value;
+  });
+
+  return {
+    date: `${map.year}-${map.month}-${map.day}`,
+    minutes: Number(map.hour) * 60 + Number(map.minute)
+  };
+}
+
+function hhmmMinutesFront_(value) {
+  const m = String(value || '').match(/^(\d{1,2}):(\d{2})$/);
+  if (!m) return null;
+
+  const hour = Number(m[1]);
+  const minute = Number(m[2]);
+  if (hour > 23 || minute > 59) return null;
+
+  return hour * 60 + minute;
+}
+
+function getInternalSessionTimingState_(data, now = new Date()) {
+  const current = jakartaNowParts_(now);
+  const sessions = [];
+
+  (data?.dates || []).forEach(d => {
+    (d.sessions || []).forEach(s => {
+      const startMinutes = hhmmMinutesFront_(s.start);
+      const endMinutes = hhmmMinutesFront_(s.end);
+      if (startMinutes === null || endMinutes === null) return;
+
+      sessions.push({
+        date: d.date,
+        sessionId: s.sessionId,
+        startMinutes,
+        endMinutes
+      });
+    });
+  });
+
+  const todaySessions = sessions
+    .filter(s => s.date === current.date)
+    .sort((a, b) => a.startMinutes - b.startMinutes);
+
+  const active = todaySessions.find(
+    s => current.minutes >= s.startMinutes && current.minutes < s.endMinutes
+  ) || null;
+
+  const next = todaySessions.find(
+    s => s.startMinutes > current.minutes
+  ) || null;
+
+  return {
+    activeSessionId: active ? active.sessionId : '',
+    nextSessionId: next ? next.sessionId : ''
+  };
+}
+
+
 function renderInternalLandingSchedule() {
   const root = document.getElementById('internalLandingSchedule');
   if (!root) return;
@@ -2587,6 +2689,7 @@ function renderInternalLandingSchedule() {
 
   const roomCount = internalScheduleData.roomCount || 6;
   const cap = internalScheduleData.roomCapacity || 4;
+  const timingState = getInternalSessionTimingState_(internalScheduleData);
 
   root.innerHTML = internalScheduleData.dates.map(d => {
     const total = d.sessions.reduce(
@@ -2619,11 +2722,15 @@ function renderInternalLandingSchedule() {
 
         const available = room.available !== false;
         const clickable = available && count > 0;
+        const isCurrent = ses.sessionId === timingState.activeSessionId;
+        const isNext = !isCurrent && ses.sessionId === timingState.nextSessionId;
 
         const classes = [
           'room-session',
           !available ? 'full empty' : (count >= cap ? 'full' : ''),
           count === 0 ? 'empty' : '',
+          isCurrent ? 'is-current-session' : '',
+          isNext ? 'is-next-session' : '',
           newCount > 0 ? 'has-new-booking' : ''
         ].filter(Boolean).join(' ');
 
@@ -2634,6 +2741,8 @@ function renderInternalLandingSchedule() {
             <div class="room-session-count">
               ${available ? `${count}/${cap}` : 'Tidak tersedia'}
             </div>
+            ${isCurrent ? `<span class="session-status-badge current">Sedang berlangsung</span>` : ''}
+            ${isNext ? `<span class="session-status-badge next">Berikutnya</span>` : ''}
             ${newCount > 0 ? `<span class="new-booking-badge">${newCount} baru</span>` : ''}
           </div>`;
       }).join('');

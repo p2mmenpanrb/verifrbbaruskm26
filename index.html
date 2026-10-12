@@ -72,7 +72,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#1570ef;box-sh
 .filters{display:grid;grid-template-columns:1.5fr 1fr auto;gap:8px;margin-bottom:11px}
 
 .upload-filters{
-  grid-template-columns:minmax(250px,1.5fr) repeat(3,minmax(155px,.8fr)) auto;
+  grid-template-columns:minmax(250px,1.5fr) repeat(4,minmax(155px,.8fr)) auto;
 }
 .summary-line{display:flex;gap:16px;flex-wrap:wrap;margin:11px 0 13px;color:var(--muted);font-size:12px}.summary-line strong{color:var(--text)}
 
@@ -1056,6 +1056,10 @@ tbody tr:last-child td{border-bottom:0}.log-cancelled{opacity:.38;background:#fa
             <option value="">Semua Level 2</option>
           </select>
 
+          <select id="uploadPJStatus" onchange="renderUploadTable('institution')">
+            <option value="">Semua status Penanggung Jawab</option>
+          </select>
+
           <select id="uploadFilter" onchange="renderUploadTable('institution')">
             <option value="">Semua status usulan</option>
             <option value="active">Diajukan untuk dihapus</option>
@@ -1325,6 +1329,10 @@ tbody tr:last-child td{border-bottom:0}.log-cancelled{opacity:.38;background:#fa
 
           <select id="internalUploadLevel2" onchange="renderUploadTable('internal')">
             <option value="">Semua Level 2</option>
+          </select>
+
+          <select id="internalUploadPJStatus" onchange="renderUploadTable('internal')">
+            <option value="">Semua status Penanggung Jawab</option>
           </select>
 
           <select id="internalUploadFilter" onchange="renderUploadTable('internal')">
@@ -2148,6 +2156,7 @@ function getUploadControls(scope) {
         search:'internalUploadSearch',
         level1:'internalUploadLevel1',
         level2:'internalUploadLevel2',
+        pjStatus:'internalUploadPJStatus',
         filter:'internalUploadFilter',
         body:'internalUploadBody'
       }
@@ -2155,6 +2164,7 @@ function getUploadControls(scope) {
         search:'uploadSearch',
         level1:'uploadLevel1',
         level2:'uploadLevel2',
+        pjStatus:'uploadPJStatus',
         filter:'uploadFilter',
         body:'uploadBody'
       };
@@ -2188,11 +2198,13 @@ function populateUploadLevelFilters(scope) {
   const c = getUploadControls(scope);
   const level1El = document.getElementById(c.level1);
   const level2El = document.getElementById(c.level2);
+  const pjStatusEl = document.getElementById(c.pjStatus);
 
-  if (!level1El || !level2El) return;
+  if (!level1El || !level2El || !pjStatusEl) return;
 
   const currentLevel1 = level1El.value || '';
   const currentLevel2 = level2El.value || '';
+  const currentPJStatus = pjStatusEl.value || '';
 
   const selectedLevel1 = setUploadSelectOptions_(
     level1El,
@@ -2210,6 +2222,13 @@ function populateUploadLevelFilters(scope) {
     'Semua Level 2',
     level2Rows.map(r => r.level2),
     currentLevel2
+  );
+
+  setUploadSelectOptions_(
+    pjStatusEl,
+    'Semua status Penanggung Jawab',
+    sourceUploads.map(r => r.statusPJ),
+    currentPJStatus
   );
 }
 
@@ -2243,9 +2262,11 @@ function resetUploadFilters(scope) {
 
   const level1El = document.getElementById(c.level1);
   const level2El = document.getElementById(c.level2);
+  const pjStatusEl = document.getElementById(c.pjStatus);
 
   if (level1El) level1El.value = '';
   if (level2El) level2El.value = '';
+  if (pjStatusEl) pjStatusEl.value = '';
 
   populateUploadLevelFilters(scope);
   renderUploadTable(scope);
@@ -2261,6 +2282,7 @@ function renderUploadTable(scope) {
 
   const level1 = document.getElementById(c.level1)?.value || '';
   const level2 = document.getElementById(c.level2)?.value || '';
+  const pjStatus = document.getElementById(c.pjStatus)?.value || '';
   const filter = document.getElementById(c.filter)?.value || '';
 
   let rows = [...sourceUploads];
@@ -2282,6 +2304,12 @@ function renderUploadTable(scope) {
   if (level2) {
     rows = rows.filter(r =>
       String(r.level2 || '').trim() === level2
+    );
+  }
+
+  if (pjStatus) {
+    rows = rows.filter(r =>
+      String(r.statusPJ || '').trim() === pjStatus
     );
   }
 

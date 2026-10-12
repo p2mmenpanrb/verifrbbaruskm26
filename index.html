@@ -88,6 +88,11 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:#1570ef;box-sh
 .pj-status{font-size:11px;color:#475467;line-height:1.35}.request-status{font-size:12px;font-weight:650;color:#475467}.request-status.cancelled{color:var(--brand)}
 .new-tag{display:inline-flex;margin-left:5px;padding:2px 6px;border:1px solid #fecdca;border-radius:999px;color:var(--brand);font-size:9px;font-weight:700}
 .row-action{display:flex;justify-content:flex-end}
+.table-action-stack{display:flex;flex-direction:column;gap:6px;align-items:stretch;min-width:118px}
+.table-action-stack .btn{width:100%;white-space:normal;line-height:1.25}
+.btn-backend-approval{background:#fff;border-color:#b2ddff;color:#175cd3}
+.btn-backend-approval:hover{background:#eff8ff}
+.btn-backend-approval:disabled{background:#f9fafb;border-color:var(--line);color:#667085;opacity:1}
 .detail{display:none;padding:8px 14px 10px;background:#fafafa;border-bottom:1px solid var(--line);font-size:11px;color:var(--muted)}
 .detail.open{display:block}.detail-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 
@@ -483,6 +488,55 @@ tbody tr:last-child td{border-bottom:0}.log-cancelled{opacity:.38;background:#fa
 .room-session.full{
   background:#f9fafb;
   opacity:.6;
+}
+
+.room-session.has-new-booking{
+  background:#eff8ff;
+  box-shadow:inset 3px 0 0 #2e90fa;
+  opacity:1;
+}
+.room-session.has-new-booking:hover{
+  background:#e7f3ff;
+}
+.new-booking-badge{
+  display:inline-flex;
+  align-items:center;
+  margin-top:4px;
+  padding:2px 6px;
+  border-radius:999px;
+  background:#dbeafe;
+  color:#175cd3;
+  font-size:9px;
+  line-height:1.3;
+  font-weight:750;
+}
+.internal-new-booking-summary{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  margin-left:8px;
+  padding:4px 8px;
+  border-radius:999px;
+  background:#eff8ff;
+  color:#175cd3;
+  font-size:10px;
+  font-weight:700;
+}
+.booking-item-new{
+  border-color:#b2ddff;
+  background:#f5fbff;
+}
+.booking-item-new .booking-name::after{
+  content:"Baru";
+  display:inline-flex;
+  margin-left:7px;
+  padding:2px 5px;
+  border-radius:999px;
+  background:#dbeafe;
+  color:#175cd3;
+  font-size:9px;
+  font-weight:750;
+  vertical-align:middle;
 }
 .internal-select-wrap{
   margin-top:20px;
@@ -1327,6 +1381,72 @@ let booking = null;
 let availability = null;
 let internalScheduleData = null;
 let internalData = null;
+
+const SEEN_BOOKING_STORAGE_KEY = 'rbPortalSeenConsultationBookings';
+let seenConsultationBookingIds = loadSeenConsultationBookingIds_();
+
+function loadSeenConsultationBookingIds_() {
+  try {
+    const raw = localStorage.getItem(SEEN_BOOKING_STORAGE_KEY);
+    const arr = raw ? JSON.parse(raw) : [];
+    return new Set(Array.isArray(arr) ? arr.map(String) : []);
+  } catch (err) {
+    return new Set();
+  }
+}
+
+function saveSeenConsultationBookingIds_() {
+  try {
+    localStorage.setItem(
+      SEEN_BOOKING_STORAGE_KEY,
+      JSON.stringify(Array.from(seenConsultationBookingIds))
+    );
+  } catch (err) {
+    // Visual cue is non-critical.
+  }
+}
+
+function allInternalBookingIds_(data) {
+  const ids = [];
+  (data?.dates || []).forEach(d => {
+    (d.sessions || []).forEach(s => {
+      (s.rooms || []).forEach(r => {
+        (r.bookings || []).forEach(b => {
+          if (b.bookingId) ids.push(String(b.bookingId));
+        });
+      });
+    });
+  });
+  return ids;
+}
+
+function initializeSeenBookingsIfNeeded_(data) {
+  try {
+    if (localStorage.getItem(SEEN_BOOKING_STORAGE_KEY) !== null) return;
+  } catch (err) {
+    return;
+  }
+
+  allInternalBookingIds_(data).forEach(id => seenConsultationBookingIds.add(id));
+  saveSeenConsultationBookingIds_();
+}
+
+function isNewConsultationBooking_(bookingId) {
+  return !!bookingId && !seenConsultationBookingIds.has(String(bookingId));
+}
+
+function markConsultationBookingsSeen_(bookingIds) {
+  (bookingIds || []).forEach(id => {
+    if (id) seenConsultationBookingIds.add(String(id));
+  });
+  saveSeenConsultationBookingIds_();
+}
+
+function countNewConsultationBookings_(data) {
+  return allInternalBookingIds_(data)
+    .filter(id => isNewConsultationBooking_(id))
+    .length;
+}
 let selectedSessionId = '';
 let consultationRequired = null;
 let loadingTimer = null;
@@ -1982,12 +2102,32 @@ function renderUploadTable(scope) {
     if (r.decision === 'ACTIVE') status = r.origin === 'NEW' ? 'Baru diajukan' : 'Diajukan untuk dihapus';
     if (r.decision === 'CANCELLED') status = 'Dibatalkan';
     const actor = scope === 'internal' ? 'INTERNAL' : 'INSTITUTION';
-    let action = '<span class="pill">View only</span>';
+
+    let deleteAction = '<span class="pill">View only</span>';
     if (canEdit()) {
-      if (r.decision === 'ACTIVE') action = `<button class="btn btn-danger" onclick="changeDecision('${jsEsc(r.batchId)}','CANCELLED','${actor}')">Batalkan</button>`;
-      else if (r.decision === 'CANCELLED') action = `<button class="btn btn-secondary" onclick="changeDecision('${jsEsc(r.batchId)}','ACTIVE','${actor}')">Ajukan kembali</button>`;
-      else action = `<button class="btn btn-secondary" onclick="changeDecision('${jsEsc(r.batchId)}','ACTIVE','${actor}')">Ajukan penghapusan</button>`;
+      if (r.decision === 'ACTIVE') {
+        deleteAction = `<button class="btn btn-danger" onclick="changeDecision('${jsEsc(r.batchId)}','CANCELLED','${actor}')">Batalkan</button>`;
+      } else if (r.decision === 'CANCELLED') {
+        deleteAction = `<button class="btn btn-secondary" onclick="changeDecision('${jsEsc(r.batchId)}','ACTIVE','${actor}')">Ajukan kembali</button>`;
+      } else {
+        deleteAction = `<button class="btn btn-secondary" onclick="changeDecision('${jsEsc(r.batchId)}','ACTIVE','${actor}')">Ajukan penghapusan</button>`;
+      }
     }
+
+    const pjNotApproved = isPjNotApprovedFront(r.statusPJ);
+    let backendApprovalAction = '';
+
+    if (scope === 'institution' && canEdit() && pjNotApproved) {
+      backendApprovalAction = r.backendApprovalRequested
+        ? `<button class="btn btn-backend-approval" disabled>Approval backend diajukan</button>`
+        : `<button class="btn btn-backend-approval" onclick="requestBackendApproval('${jsEsc(r.batchId)}',this)">Ajukan approval via backend</button>`;
+    }
+
+    const action = `
+      <div class="table-action-stack">
+        ${deleteAction}
+        ${backendApprovalAction}
+      </div>`;
     const hideAction = scope === 'institution' && !canEdit();
     tr.innerHTML = `
       <td><span class="raw-id">${esc(r.batchId)}</span></td>
@@ -2021,6 +2161,56 @@ async function changeDecision(batchId, decision, actorType) {
   } catch (err) {
     if (err.code === 'ACCESS_VIEW_ONLY') await reloadCurrentInstitution();
     showError(err.message);
+  }
+}
+
+
+function isPjNotApprovedFront(status) {
+  return normalize(status).includes('belum diapprove');
+}
+
+async function requestBackendApproval(batchId, button) {
+  if (!session || !canEdit()) return;
+
+  const ok = confirm(
+    'Ajukan Batch ID ini untuk proses approval melalui backend?\n\n' +
+    'Pengajuan ini tidak langsung mengubah Status Penanggung Jawab. ' +
+    'Status akan berubah setelah proses backend dilakukan dan data sumber diperbarui.'
+  );
+
+  if (!ok) return;
+
+  const oldText = button?.textContent || 'Ajukan approval via backend';
+
+  if (button) {
+    button.disabled = true;
+    button.textContent = 'Mengajukan...';
+  }
+
+  try {
+    const result = await apiPost('requestBackendApproval', {
+      institutionId: session.institutionId,
+      batchId: String(batchId),
+      actorType: 'INSTITUTION'
+    });
+
+    const row = sourceUploads.find(r => r.batchId === String(batchId));
+    if (row) {
+      row.backendApprovalRequested = true;
+      row.backendApprovalRequestedAt = result?.requestedAt || '';
+    }
+
+    renderUploadTable('institution');
+  } catch (err) {
+    if (err.code === 'ACCESS_VIEW_ONLY' || err.code === 'PJ_ALREADY_APPROVED') {
+      await reloadCurrentInstitution();
+    }
+    showError(err.message);
+  } finally {
+    if (button && document.body.contains(button)) {
+      button.disabled = false;
+      button.textContent = oldText;
+    }
   }
 }
 
@@ -2372,6 +2562,7 @@ async function loadInternalSchedule() {
   showLoading('Memuat jadwal breakout...', 'Jadwal dan booking aktif sedang disiapkan.');
   try {
     internalScheduleData = await apiGet('internalSchedule');
+    initializeSeenBookingsIfNeeded_(internalScheduleData);
     renderInternalLandingSchedule();
   } catch (err) {
     if (err.code === 'INTERNAL_AUTH_REQUIRED' || err.code === 'INTERNAL_SESSION_EXPIRED') {
@@ -2398,19 +2589,76 @@ function renderInternalLandingSchedule() {
   const cap = internalScheduleData.roomCapacity || 4;
 
   root.innerHTML = internalScheduleData.dates.map(d => {
-    const total = d.sessions.reduce((s, ses) => s + ses.rooms.reduce((x, r) => x + r.bookings.length, 0), 0);
+    const total = d.sessions.reduce(
+      (s, ses) => s + ses.rooms.reduce((x, r) => x + r.bookings.length, 0),
+      0
+    );
+
+    const newOnDate = d.sessions.reduce(
+      (s, ses) => s + ses.rooms.reduce(
+        (x, r) => x + r.bookings.filter(b => isNewConsultationBooking_(b.bookingId)).length,
+        0
+      ),
+      0
+    );
+
     const roomHtml = Array.from({ length:roomCount }, (_, idx) => {
       const roomNo = idx + 1;
+
       const cells = d.sessions.map(ses => {
-        const room = ses.rooms.find(r => Number(r.room) === roomNo) || { room:roomNo, bookings:[], available:true };
+        const room = ses.rooms.find(r => Number(r.room) === roomNo) || {
+          room:roomNo,
+          bookings:[],
+          available:true
+        };
+
         const count = room.bookings.length;
+        const newCount = room.bookings.filter(
+          b => isNewConsultationBooking_(b.bookingId)
+        ).length;
+
         const available = room.available !== false;
         const clickable = available && count > 0;
-        return `<div class="room-session ${!available ? 'full empty' : (count >= cap ? 'full' : '')} ${count === 0 ? 'empty' : ''}" ${clickable ? `onclick="openRoomDetail('${jsEsc(d.date)}','${jsEsc(ses.sessionId)}',${roomNo})"` : ''}><div class="room-session-time">${esc(ses.start)}–${esc(ses.end)}</div><div class="room-session-count">${available ? `${count}/${cap}` : 'Tidak tersedia'}</div></div>`;
+
+        const classes = [
+          'room-session',
+          !available ? 'full empty' : (count >= cap ? 'full' : ''),
+          count === 0 ? 'empty' : '',
+          newCount > 0 ? 'has-new-booking' : ''
+        ].filter(Boolean).join(' ');
+
+        return `
+          <div class="${classes}"
+            ${clickable ? `onclick="openRoomDetail('${jsEsc(d.date)}','${jsEsc(ses.sessionId)}',${roomNo})"` : ''}>
+            <div class="room-session-time">${esc(ses.start)}–${esc(ses.end)}</div>
+            <div class="room-session-count">
+              ${available ? `${count}/${cap}` : 'Tidak tersedia'}
+            </div>
+            ${newCount > 0 ? `<span class="new-booking-badge">${newCount} baru</span>` : ''}
+          </div>`;
       }).join('');
-      return `<div class="room-column"><div class="room-head"><strong>Breakout ${roomNo}</strong><span>Maks. ${cap} instansi / sesi</span></div>${cells}</div>`;
+
+      return `
+        <div class="room-column">
+          <div class="room-head">
+            <strong>Breakout ${roomNo}</strong>
+            <span>Maks. ${cap} instansi / sesi</span>
+          </div>
+          ${cells}
+        </div>`;
     }).join('');
-    return `<div class="schedule-date-block"><div class="schedule-date-title"><strong>${esc(d.label)}</strong><span>${total} booking tercatat</span></div><div class="room-board">${roomHtml}</div></div>`;
+
+    return `
+      <div class="schedule-date-block">
+        <div class="schedule-date-title">
+          <strong>
+            ${esc(d.label)}
+            ${newOnDate > 0 ? `<span class="internal-new-booking-summary">${newOnDate} booking baru</span>` : ''}
+          </strong>
+          <span>${total} booking tercatat</span>
+        </div>
+        <div class="room-board">${roomHtml}</div>
+      </div>`;
   }).join('');
 }
 
@@ -2421,12 +2669,37 @@ function openRoomDetail(date, sessionId, roomNo) {
   if (!d || !ses || !room) return;
 
   document.getElementById('roomDetailTitle').textContent = `Breakout ${roomNo}`;
-  document.getElementById('roomDetailSubtitle').textContent = `${d.label} · ${ses.start}–${ses.end} WIB · ${room.bookings.length}/${internalScheduleData.roomCapacity}`;
+  document.getElementById('roomDetailSubtitle').textContent =
+    `${d.label} · ${ses.start}–${ses.end} WIB · ${room.bookings.length}/${internalScheduleData.roomCapacity}`;
+
   const root = document.getElementById('roomBookingList');
+
+  const newIdsBeforeOpen = new Set(
+    room.bookings
+      .filter(b => isNewConsultationBooking_(b.bookingId))
+      .map(b => String(b.bookingId))
+  );
+
   root.innerHTML = room.bookings.length
-    ? room.bookings.map(b => `<div class="booking-item"><div><div class="booking-name">${esc(b.institutionName)}</div><div class="booking-meta">Status booking: Aktif</div></div><button class="btn btn-secondary" onclick="openInstitutionFromBooking('${jsEsc(b.institutionId)}')">Buka instansi</button></div>`).join('')
+    ? room.bookings.map(b => `
+        <div class="booking-item ${newIdsBeforeOpen.has(String(b.bookingId)) ? 'booking-item-new' : ''}">
+          <div>
+            <div class="booking-name">${esc(b.institutionName)}</div>
+            <div class="booking-meta">Status booking: Aktif</div>
+          </div>
+          <button class="btn btn-secondary"
+            onclick="openInstitutionFromBooking('${jsEsc(b.institutionId)}')">
+            Buka instansi
+          </button>
+        </div>`).join('')
     : '<div class="booking-empty">Belum ada instansi pada breakout room ini.</div>';
+
   document.getElementById('roomDetailModal').classList.remove('hidden');
+
+  if (newIdsBeforeOpen.size) {
+    markConsultationBookingsSeen_(Array.from(newIdsBeforeOpen));
+    renderInternalLandingSchedule();
+  }
 }
 
 function closeRoomDetail() {
@@ -2540,6 +2813,7 @@ function activityLabel(action) {
     OPEN_INTERNAL:'Tampilan internal dibuka',
     DELETE_ACTIVE:'Usulan penghapusan diaktifkan',
     DELETE_CANCELLED:'Usulan penghapusan dibatalkan',
+    REQUEST_BACKEND_APPROVAL:'Approval via backend diajukan',
     SUBMIT_CLARIFICATION:'Klarifikasi dikirim',
     BOOK_CONSULTATION:'Konsultasi dijadwalkan',
     SAVE_INTERNAL_NOTE:'Catatan internal diperbarui'

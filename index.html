@@ -995,7 +995,7 @@ button.control-card{text-align:left;cursor:pointer;font:inherit}button.control-c
 
 
 <section id="internalDashboardPage" class="internal-control-page hidden">
-  <div class="control-page-head"><div><h2>Dashboard proses pemetaan</h2><p>Ringkasan posisi terkini dan area yang membutuhkan perhatian Tim Internal.</p></div><button class="btn btn-secondary" onclick="loadInternalDashboard(true)">Refresh dashboard</button></div>
+  <div class="control-page-head"><div><h2>Dashboard proses pemetaan</h2><p>Ringkasan posisi terkini dan area yang membutuhkan perhatian Tim Internal.</p><div id="internalDashboardStatus" style="margin-top:5px;font-size:10px;color:var(--muted)">Menunggu data dashboard...</div></div><button class="btn btn-secondary" onclick="loadInternalDashboard(true)">Refresh dashboard</button></div>
   <div class="control-card-grid">
     <button class="control-card" onclick="openFollowupQueue('notSubmitted')"><div id="dashMappingInstitutions" class="metric blue">0</div><div class="title">Instansi dalam pemetaan</div><div class="help">Instansi yang memiliki usulan awal atau perubahan penghapusan.</div></button>
     <div class="control-card"><div id="dashFinalDelete" class="metric">0</div><div class="title">Final diajukan untuk dihapus</div><div class="help">Batch ID yang saat ini berstatus ACTIVE.</div></div>
@@ -2002,34 +2002,74 @@ async function switchMode(next) {
 
 async function switchInternalPage(page) {
   internalPage = page;
-  document.getElementById('internalDashboardTab')?.classList.toggle('active', page === 'dashboard');
-  document.getElementById('internalFollowupTab')?.classList.toggle('active', page === 'followup');
-  document.getElementById('internalScheduleTab')?.classList.toggle('active', page === 'schedule');
-  document.getElementById('internalAssistanceTab')?.classList.toggle('active', page === 'assistance');
-  document.getElementById('internalDashboardPage')?.classList.toggle('hidden', page !== 'dashboard');
-  document.getElementById('internalFollowupPage')?.classList.toggle('hidden', page !== 'followup');
-  document.getElementById('internalLanding')?.classList.toggle('hidden', page !== 'schedule');
-  document.getElementById('internalAssistancePage')?.classList.toggle('hidden', page !== 'assistance');
-  document.getElementById('institutionMode')?.classList.add('hidden');
-  document.getElementById('institutionPublicWorkspace')?.classList.add('hidden');
+
+  document.getElementById('internalDashboardTab')?.classList.toggle(
+    'active',
+    page === 'dashboard'
+  );
+  document.getElementById('internalFollowupTab')?.classList.toggle(
+    'active',
+    page === 'followup'
+  );
+  document.getElementById('internalScheduleTab')?.classList.toggle(
+    'active',
+    page === 'schedule'
+  );
+  document.getElementById('internalAssistanceTab')?.classList.toggle(
+    'active',
+    page === 'assistance'
+  );
+
+  document.getElementById('internalDashboardPage')?.classList.toggle(
+    'hidden',
+    page !== 'dashboard'
+  );
+  document.getElementById('internalFollowupPage')?.classList.toggle(
+    'hidden',
+    page !== 'followup'
+  );
+  document.getElementById('internalLanding')?.classList.toggle(
+    'hidden',
+    page !== 'schedule'
+  );
+  document.getElementById('internalAssistancePage')?.classList.toggle(
+    'hidden',
+    page !== 'assistance'
+  );
+
+  // Public/institution-specific workspace must never bleed into
+  // Dashboard, Tindak Lanjut, or Jadwal Konsultasi.
+  if (page !== 'assistance') {
+    document.getElementById('app')?.classList.add('hidden');
+    document.getElementById('institutionMode')?.classList.add('hidden');
+    document.getElementById('institutionPublicWorkspace')?.classList.add('hidden');
+    document.getElementById('internalMode')?.classList.add('hidden');
+  }
 
   if (page === 'dashboard') {
-    document.getElementById('internalMode').classList.add('hidden');
     await loadInternalDashboard(false);
+
   } else if (page === 'followup') {
-    document.getElementById('internalMode').classList.add('hidden');
     await loadInternalDashboard(false);
     renderFollowupQueue();
+
   } else if (page === 'schedule') {
-    document.getElementById('internalMode').classList.add('hidden');
     await loadInternalSchedule();
-  } else if (session) {
-    document.getElementById('app').classList.remove('hidden');
-    document.getElementById('internalMode').classList.remove('hidden');
-    switchInternalWorkPage('summary');
-    renderAll();
-  } else {
-    document.getElementById('internalMode').classList.add('hidden');
+
+  } else if (page === 'assistance') {
+    // The selector/empty state is shown by internalAssistancePage itself.
+    // Only reveal the institution-specific app if an institution is loaded.
+    if (session) {
+      document.getElementById('app')?.classList.remove('hidden');
+      document.getElementById('institutionMode')?.classList.add('hidden');
+      document.getElementById('institutionPublicWorkspace')?.classList.add('hidden');
+      document.getElementById('internalMode')?.classList.remove('hidden');
+      switchInternalWorkPage('summary');
+      renderAll();
+    } else {
+      document.getElementById('app')?.classList.add('hidden');
+      document.getElementById('internalMode')?.classList.add('hidden');
+    }
   }
 }
 
@@ -2964,39 +3004,155 @@ async function reloadCurrentInstitution(showLoader = true) {
 // INTERNAL DASHBOARD / FOLLOW-UP
 // -----------------------------------------------------------------------------
 async function loadInternalDashboard(force = false) {
-  if (internalDashboardData && !force) { renderInternalDashboard(); renderFollowupQueue(); return; }
-  showLoading('Memuat dashboard internal...', 'Ringkasan proses dan daftar tindak lanjut sedang disiapkan.');
+  const statusEl = document.getElementById('internalDashboardStatus');
+
+  if (internalDashboardData && !force) {
+    renderInternalDashboard();
+    renderFollowupQueue();
+    return;
+  }
+
+  if (statusEl) {
+    statusEl.textContent = 'Memuat data dashboard...';
+    statusEl.style.color = 'var(--muted)';
+  }
+
+  showLoading(
+    'Memuat dashboard internal...',
+    'Ringkasan proses dan daftar tindak lanjut sedang disiapkan.'
+  );
+
   try {
     internalDashboardData = await apiGet('internalDashboard');
-    renderInternalDashboard(); renderFollowupQueue();
+
+    renderInternalDashboard();
+    renderFollowupQueue();
+
+    const summary = internalDashboardData?.summary || {};
+    const totalUploads = Number(summary.totalUploadRecords || 0);
+
+    if (statusEl) {
+      if (totalUploads > 0) {
+        statusEl.textContent =
+          `Data dashboard berhasil dimuat · ${fmt(totalUploads)} log upload dianalisis`;
+        statusEl.style.color = 'var(--green)';
+      } else {
+        statusEl.textContent =
+          'Dashboard terhubung, tetapi backend mengembalikan 0 log upload.';
+        statusEl.style.color = 'var(--amber)';
+      }
+    }
+
   } catch (err) {
-    if (err.code === 'INTERNAL_AUTH_REQUIRED' || err.code === 'INTERNAL_SESSION_EXPIRED') {
-      internalToken = ''; sessionStorage.removeItem(INTERNAL_TOKEN_KEY); showInternalLogin();
-    } else showError(err.message);
-  } finally { await hideLoading(); }
+    if (statusEl) {
+      statusEl.textContent =
+        `Dashboard belum dapat dimuat: ${err?.message || 'kesalahan tidak diketahui'}`;
+      statusEl.style.color = 'var(--brand)';
+    }
+
+    if (
+      err.code === 'INTERNAL_AUTH_REQUIRED' ||
+      err.code === 'INTERNAL_SESSION_EXPIRED'
+    ) {
+      internalToken = '';
+      sessionStorage.removeItem(INTERNAL_TOKEN_KEY);
+      showInternalLogin();
+    } else {
+      showError(err.message);
+    }
+  } finally {
+    await hideLoading();
+  }
 }
 
 function renderInternalDashboard() {
-  const data = internalDashboardData || {}; const s = data.summary || {};
-  const setText = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = fmt(value || 0); };
-  setText('dashMappingInstitutions', s.institutionsInMapping); setText('dashFinalDelete', s.finalActiveRequests);
-  setText('dashBackendActive', s.backendApprovalActive); setText('dashPJPending', s.pjPendingRows);
-  setText('dashOriginal', s.originalRequests); setText('dashOriginalActive', s.originalStillActive);
-  setText('dashCancelled', s.originalCancelled); setText('dashNew', s.newActiveRequests);
-  setText('dashClarFinal', s.clarificationUpToDate); setText('dashClarChanged', s.clarificationChangedAfterSubmit); setText('dashClarMissing', s.clarificationNotSubmitted);
-  const progress = Math.max(0, Math.min(100, Number(s.clarificationProgressPercent || 0)));
-  if (document.getElementById('dashProgressPercent')) document.getElementById('dashProgressPercent').textContent = `${progress}%`;
-  if (document.getElementById('dashProgressFill')) document.getElementById('dashProgressFill').style.width = `${progress}%`;
-  document.getElementById('queueCountBackend').textContent = fmt((data.queues?.backendApproval || []).length);
-  document.getElementById('queueCountChanged').textContent = fmt((data.queues?.clarificationChanged || []).length);
-  document.getElementById('queueCountNotSubmitted').textContent = fmt((data.queues?.clarificationNotSubmitted || []).length);
-  document.getElementById('queueCountPJPending').textContent = fmt((data.queues?.pjPending || []).length);
+  const data = internalDashboardData || {};
+  const s = data.summary || {};
 
-  const priorityBody = document.getElementById('priorityInstitutionBody'); const priority = data.priorityInstitutions || [];
-  if (priorityBody) priorityBody.innerHTML = priority.length ? priority.slice(0,10).map(item => `<tr><td><div class="ops-name">${esc(item.institutionName)}</div><div class="ops-sub">${esc(item.clarificationStatus || '—')}</div></td><td>${renderIssueChips_(item.issues || [])}</td><td>${fmt(item.finalDeleteCount || 0)}</td><td><button class="btn btn-secondary" onclick="openInternalInstitutionById('${jsEsc(item.institutionId)}')">Buka</button></td></tr>`).join('') : '<tr><td colspan="4">Tidak ada instansi prioritas.</td></tr>';
+  const setText = (id, value) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = fmt(value || 0);
+  };
 
-  const root = document.getElementById('globalActivityList'); const activity = data.recentActivity || [];
-  if (root) root.innerHTML = activity.length ? activity.map(a => `<div class="global-activity"><strong>${esc(activityLabel(a.action))} · ${esc(a.institutionName || '—')}</strong><span>${esc(a.timestamp || '—')}${a.batchId ? ` · Batch ID ${esc(a.batchId)}` : ''}${a.actorName ? ` · ${esc(a.actorName)}` : ''}</span></div>`).join('') : '<div class="queue-empty">Belum ada aktivitas.</div>';
+  setText('dashMappingInstitutions', s.institutionsInMapping);
+  setText('dashFinalDelete', s.finalActiveRequests);
+  setText('dashBackendActive', s.backendApprovalActive);
+  setText('dashPJPending', s.pjPendingRows);
+
+  setText('dashOriginal', s.originalRequests);
+  setText('dashOriginalActive', s.originalStillActive);
+  setText('dashCancelled', s.originalCancelled);
+  setText('dashNew', s.newActiveRequests);
+
+  setText('dashClarFinal', s.clarificationUpToDate);
+  setText('dashClarChanged', s.clarificationChangedAfterSubmit);
+  setText('dashClarMissing', s.clarificationNotSubmitted);
+
+  const progress = Math.max(
+    0,
+    Math.min(100, Number(s.clarificationProgressPercent || 0))
+  );
+
+  const progressText = document.getElementById('dashProgressPercent');
+  const progressFill = document.getElementById('dashProgressFill');
+
+  if (progressText) progressText.textContent = `${progress}%`;
+  if (progressFill) progressFill.style.width = `${progress}%`;
+
+  setText('queueCountBackend', (data.queues?.backendApproval || []).length);
+  setText('queueCountChanged', (data.queues?.clarificationChanged || []).length);
+  setText('queueCountNotSubmitted', (data.queues?.clarificationNotSubmitted || []).length);
+  setText('queueCountPJPending', (data.queues?.pjPending || []).length);
+
+  const priorityBody = document.getElementById('priorityInstitutionBody');
+  const priority = Array.isArray(data.priorityInstitutions)
+    ? data.priorityInstitutions
+    : [];
+
+  if (priorityBody) {
+    priorityBody.innerHTML = priority.length
+      ? priority.slice(0, 10).map(item => `
+          <tr>
+            <td>
+              <div class="ops-name">${esc(item.institutionName || '—')}</div>
+              <div class="ops-sub">${esc(item.clarificationStatus || '—')}</div>
+            </td>
+            <td>${renderIssueChips_(item.issues || [])}</td>
+            <td>${fmt(item.finalDeleteCount || 0)}</td>
+            <td>
+              <button
+                class="btn btn-secondary"
+                onclick="openInternalInstitutionById('${jsEsc(item.institutionId)}')">
+                Buka
+              </button>
+            </td>
+          </tr>
+        `).join('')
+      : '<tr><td colspan="4">Tidak ada instansi prioritas.</td></tr>';
+  }
+
+  const root = document.getElementById('globalActivityList');
+  const activity = Array.isArray(data.recentActivity)
+    ? data.recentActivity
+    : [];
+
+  if (root) {
+    root.innerHTML = activity.length
+      ? activity.map(a => `
+          <div class="global-activity">
+            <strong>
+              ${esc(activityLabel(a.action))}
+              · ${esc(a.institutionName || '—')}
+            </strong>
+            <span>
+              ${esc(a.timestamp || '—')}
+              ${a.batchId ? ` · Batch ID ${esc(a.batchId)}` : ''}
+              ${a.actorName ? ` · ${esc(a.actorName)}` : ''}
+            </span>
+          </div>
+        `).join('')
+      : '<div class="queue-empty">Belum ada aktivitas.</div>';
+  }
 }
 
 function renderIssueChips_(issues) {
@@ -3128,7 +3284,6 @@ function renderInternalLandingSchedule() {
   const root = document.getElementById('internalLandingSchedule');
   if (!root) return;
 
-  renderDeletionMappingSummary_();
   if (!internalScheduleData?.dates?.length) {
     root.innerHTML = '<div class="empty"><strong>Belum ada jadwal aktif</strong>Atur JADWAL_KONSULTASI pada backend.</div>';
     return;

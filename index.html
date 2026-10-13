@@ -429,6 +429,98 @@ tbody tr:last-child td{border-bottom:0}.log-cancelled{opacity:.38;background:#fa
 .internal-landing{
   margin-top:22px;
 }
+
+.internal-control-page{margin-top:22px}
+.control-page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:14px}
+.control-page-head h2{margin:0;font-size:20px}.control-page-head p{margin:4px 0 0;color:var(--muted);font-size:12px}
+.control-card-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.control-card{border:1px solid var(--line);border-radius:11px;background:#fff;padding:12px 13px;min-width:0}
+button.control-card{text-align:left;cursor:pointer;font:inherit}button.control-card:hover{border-color:#c7d7fe;background:#fbfdff}
+.control-card .metric{font-size:23px;line-height:1.15;font-weight:760;color:#101828;font-variant-numeric:tabular-nums}
+.control-card .metric.green{color:var(--green)}.control-card .metric.amber{color:var(--amber)}.control-card .metric.red{color:var(--brand)}.control-card .metric.blue{color:#175cd3}
+.control-card .title{margin-top:5px;color:#344054;font-size:11px;font-weight:700}.control-card .help{margin-top:2px;color:var(--muted);font-size:10px;line-height:1.4}
+.control-section{margin-top:14px;border:1px solid var(--line);border-radius:12px;background:#fff;overflow:hidden}
+.control-section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 13px;border-bottom:1px solid var(--line);background:#fcfcfd}
+.control-section-head strong{font-size:12px;color:#344054}.control-section-head span{color:var(--muted);font-size:10px}
+.progress-wrap{padding:14px}.progress-line{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:8px}.progress-line strong{font-size:14px;color:#344054}.progress-line span{font-size:20px;font-weight:760;color:#175cd3}
+.progress-track{height:9px;border-radius:999px;background:#eaecf0;overflow:hidden}.progress-fill{height:100%;width:0;border-radius:999px;background:#2e90fa;transition:width .25s ease}
+.progress-meta{display:flex;gap:16px;flex-wrap:wrap;margin-top:8px;color:var(--muted);font-size:10px}
+.dashboard-two-col{display:grid;grid-template-columns:1.1fr .9fr;gap:14px;margin-top:14px}.ops-table-wrap{overflow:auto}
+.ops-table{width:100%;border-collapse:collapse;font-size:11px}.ops-table th,.ops-table td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}.ops-table th{color:#475467;background:#f9fafb;white-space:nowrap}.ops-table td{color:#475467}.ops-table tr:last-child td{border-bottom:0}
+.ops-name{color:#101828;font-weight:700}.ops-sub{margin-top:2px;color:var(--muted);font-size:10px;line-height:1.35}
+.issue-chip{display:inline-flex;margin:2px 4px 2px 0;padding:3px 6px;border-radius:999px;background:#f2f4f7;color:#475467;font-size:9px;font-weight:650}.issue-chip.warn{background:#fffaeb;color:#b54708}.issue-chip.danger{background:#fff1f0;color:#b42318}.issue-chip.blue{background:#eff8ff;color:#175cd3}.issue-chip.green{background:#ecfdf3;color:#067647}
+.activity-stream{max-height:390px;overflow:auto;padding:0 13px}.global-activity{padding:10px 0;border-bottom:1px solid var(--line)}.global-activity:last-child{border-bottom:0}.global-activity strong{display:block;font-size:11px;color:#344054}.global-activity span{display:block;margin-top:2px;font-size:10px;line-height:1.45;color:var(--muted)}
+.followup-card-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.followup-card{border:1px solid var(--line);background:#fff;border-radius:11px;padding:12px;cursor:pointer;text-align:left;font:inherit}.followup-card.active{border-color:#84adff;background:#f5f8ff;box-shadow:inset 0 0 0 1px #84adff}.followup-card .count{font-size:21px;font-weight:760;color:#101828}.followup-card .label{margin-top:4px;font-size:11px;font-weight:700;color:#344054}.followup-card .desc{margin-top:2px;font-size:10px;color:var(--muted);line-height:1.4}
+.followup-toolbar{display:flex;gap:8px;align-items:center;padding:11px 12px;border-bottom:1px solid var(--line);background:#fcfcfd}.followup-toolbar input{flex:1;min-width:220px}.queue-empty{padding:22px 14px;text-align:center;color:var(--muted);font-size:11px}
+
+.mapping-summary{
+  margin:14px 0 18px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  overflow:hidden;
+  background:#fff;
+}
+.mapping-summary-head{
+  display:flex;
+  justify-content:space-between;
+  gap:16px;
+  align-items:flex-start;
+  padding:12px 14px;
+  border-bottom:1px solid var(--line);
+  background:#fcfcfd;
+}
+.mapping-summary-head strong{
+  display:block;
+  font-size:13px;
+  color:#344054;
+}
+.mapping-summary-head span{
+  display:block;
+  margin-top:2px;
+  font-size:10px;
+  color:var(--muted);
+}
+.mapping-summary-group{
+  padding:12px 14px;
+}
+.mapping-summary-group+.mapping-summary-group{
+  border-top:1px solid var(--line);
+}
+.mapping-summary-group-title{
+  margin-bottom:8px;
+  font-size:10px;
+  font-weight:750;
+  color:#667085;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+}
+.mapping-summary-grid{
+  display:grid;
+  grid-template-columns:repeat(6,minmax(0,1fr));
+  gap:0;
+}
+.mapping-stat{
+  min-width:0;
+  padding:4px 12px;
+}
+.mapping-stat:first-child{padding-left:0}
+.mapping-stat+.mapping-stat{border-left:1px solid var(--line)}
+.mapping-stat .value{
+  font-size:19px;
+  line-height:1.2;
+  font-weight:750;
+  color:#101828;
+  font-variant-numeric:tabular-nums;
+}
+.mapping-stat .label{
+  margin-top:3px;
+  font-size:10px;
+  line-height:1.35;
+  color:var(--muted);
+}
+.mapping-stat.attention .value{color:var(--amber)}
+.mapping-stat.danger .value{color:var(--brand)}
+.mapping-stat.success .value{color:var(--green)}
 .internal-landing-head{
   display:flex;
   justify-content:space-between;
@@ -809,11 +901,23 @@ tbody tr:last-child td{border-bottom:0}.log-cancelled{opacity:.38;background:#fa
 }
 
 @media(max-width:900px){
+  .control-card-grid,.followup-card-grid{grid-template-columns:repeat(2,1fr)}
+  .dashboard-two-col{grid-template-columns:1fr}
+  .mapping-summary-grid{grid-template-columns:repeat(3,1fr)}
+  .mapping-stat:nth-child(4){border-left:0}
+  .mapping-stat:nth-child(n+4){margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
   .internal-assist-summary{grid-template-columns:1fr 1fr}
   .assist-summary-item:nth-child(3){border-left:0;border-top:1px solid var(--line)}
   .assist-summary-item:nth-child(4){border-top:1px solid var(--line)}
 }
 @media(max-width:620px){
+  .control-card-grid,.followup-card-grid{grid-template-columns:1fr}
+  .control-page-head{align-items:flex-start;flex-direction:column}
+  .followup-toolbar{align-items:stretch;flex-direction:column}
+  .followup-toolbar input{min-width:0;width:100%}
+  .mapping-summary-grid{grid-template-columns:1fr 1fr}
+  .mapping-stat:nth-child(odd){border-left:0}
+  .mapping-stat:nth-child(n+3){margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
   .internal-assist-summary{grid-template-columns:1fr}
   .assist-summary-item+.assist-summary-item{border-left:0;border-top:1px solid var(--line)}
   .internal-work-nav{display:flex}
@@ -882,22 +986,46 @@ tbody tr:last-child td{border-bottom:0}.log-cancelled{opacity:.38;background:#fa
   
   
   <div id="internalPageNav" class="internal-page-nav hidden">
-    <button id="internalScheduleTab" class="internal-page-btn active" onclick="switchInternalPage('schedule')">
-      Jadwal Breakout
-    </button>
-    <button id="internalAssistanceTab" class="internal-page-btn" onclick="switchInternalPage('assistance')">
-      Pendampingan Instansi
-    </button>
-    <button class="internal-page-btn internal-logout-btn" onclick="logoutInternal()">
-      Keluar Internal
-    </button>
+    <button id="internalDashboardTab" class="internal-page-btn active" onclick="switchInternalPage('dashboard')">Dashboard</button>
+    <button id="internalFollowupTab" class="internal-page-btn" onclick="switchInternalPage('followup')">Tindak Lanjut</button>
+    <button id="internalScheduleTab" class="internal-page-btn" onclick="switchInternalPage('schedule')">Jadwal Konsultasi</button>
+    <button id="internalAssistanceTab" class="internal-page-btn" onclick="switchInternalPage('assistance')">Pendampingan Instansi</button>
+    <button class="internal-page-btn internal-logout-btn" onclick="logoutInternal()">Keluar Internal</button>
   </div>
+
+
+<section id="internalDashboardPage" class="internal-control-page hidden">
+  <div class="control-page-head"><div><h2>Dashboard proses pemetaan</h2><p>Ringkasan posisi terkini dan area yang membutuhkan perhatian Tim Internal.</p></div><button class="btn btn-secondary" onclick="loadInternalDashboard(true)">Refresh dashboard</button></div>
+  <div class="control-card-grid">
+    <button class="control-card" onclick="openFollowupQueue('notSubmitted')"><div id="dashMappingInstitutions" class="metric blue">0</div><div class="title">Instansi dalam pemetaan</div><div class="help">Instansi yang memiliki usulan awal atau perubahan penghapusan.</div></button>
+    <div class="control-card"><div id="dashFinalDelete" class="metric">0</div><div class="title">Final diajukan untuk dihapus</div><div class="help">Batch ID yang saat ini berstatus ACTIVE.</div></div>
+    <button class="control-card" onclick="openFollowupQueue('backend')"><div id="dashBackendActive" class="metric amber">0</div><div class="title">Approval backend aktif</div><div class="help">Permintaan approval yang masih menunggu penanganan.</div></button>
+    <button class="control-card" onclick="openFollowupQueue('pjPending')"><div id="dashPJPending" class="metric red">0</div><div class="title">Batch belum Diapprove PJ</div><div class="help">Upload yang status PJ-nya masih belum diapprove.</div></button>
+  </div>
+  <div class="control-section"><div class="control-section-head"><div><strong>Penyelesaian klarifikasi instansi</strong><span>Instansi dianggap selesai bila klarifikasi terakhir masih sesuai dengan keputusan saat ini.</span></div></div><div class="progress-wrap"><div class="progress-line"><strong>Progress klarifikasi</strong><span id="dashProgressPercent">0%</span></div><div class="progress-track"><div id="dashProgressFill" class="progress-fill"></div></div><div class="progress-meta"><span><strong id="dashClarFinal">0</strong> sudah final</span><span><strong id="dashClarChanged">0</strong> berubah setelah dikirim</span><span><strong id="dashClarMissing">0</strong> belum mengirim</span></div></div></div>
+  <div class="control-card-grid" style="margin-top:14px"><div class="control-card"><div id="dashOriginal" class="metric">0</div><div class="title">Usulan awal</div><div class="help">Usulan penghapusan dari pemetaan awal.</div></div><div class="control-card"><div id="dashOriginalActive" class="metric">0</div><div class="title">Usulan awal tetap diajukan</div><div class="help">Usulan awal yang masih aktif.</div></div><div class="control-card"><div id="dashCancelled" class="metric red">0</div><div class="title">Usulan awal dibatalkan</div><div class="help">Usulan awal yang dibatalkan melalui portal.</div></div><div class="control-card"><div id="dashNew" class="metric blue">0</div><div class="title">Penghapusan baru</div><div class="help">Batch ID baru yang ditambahkan melalui portal.</div></div></div>
+  <div class="dashboard-two-col">
+    <div class="control-section" style="margin-top:0"><div class="control-section-head"><div><strong>Instansi prioritas</strong><span>Diurutkan berdasarkan isu yang paling membutuhkan tindak lanjut.</span></div><button class="btn btn-secondary" onclick="switchInternalPage('followup')">Buka tindak lanjut</button></div><div class="ops-table-wrap"><table class="ops-table"><thead><tr><th>Instansi</th><th>Isu utama</th><th>Hapus</th><th>Aksi</th></tr></thead><tbody id="priorityInstitutionBody"><tr><td colspan="4">Memuat...</td></tr></tbody></table></div></div>
+    <div class="control-section" style="margin-top:0"><div class="control-section-head"><div><strong>Aktivitas terbaru</strong><span>Perubahan terbaru pada portal.</span></div></div><div id="globalActivityList" class="activity-stream"><div class="queue-empty">Memuat...</div></div></div>
+  </div>
+</section>
+
+<section id="internalFollowupPage" class="internal-control-page hidden">
+  <div class="control-page-head"><div><h2>Tindak lanjut</h2><p>Daftar kerja yang dapat digunakan Tim Internal untuk menentukan prioritas penanganan.</p></div><button class="btn btn-secondary" onclick="loadInternalDashboard(true)">Refresh tindak lanjut</button></div>
+  <div class="followup-card-grid">
+    <button id="queueCardBackend" class="followup-card active" onclick="setFollowupQueue('backend')"><div id="queueCountBackend" class="count">0</div><div class="label">Approval backend</div><div class="desc">Permintaan yang masih aktif dan PJ masih belum diapprove.</div></button>
+    <button id="queueCardChanged" class="followup-card" onclick="setFollowupQueue('changed')"><div id="queueCountChanged" class="count">0</div><div class="label">Klarifikasi berubah</div><div class="desc">Ada perubahan keputusan setelah klarifikasi terakhir dikirim.</div></button>
+    <button id="queueCardNotSubmitted" class="followup-card" onclick="setFollowupQueue('notSubmitted')"><div id="queueCountNotSubmitted" class="count">0</div><div class="label">Belum mengirim klarifikasi</div><div class="desc">Instansi dalam pemetaan yang belum mengirim klarifikasi.</div></button>
+    <button id="queueCardPJPending" class="followup-card" onclick="setFollowupQueue('pjPending')"><div id="queueCountPJPending" class="count">0</div><div class="label">Belum Diapprove PJ</div><div class="desc">Instansi yang masih memiliki upload belum diapprove PJ.</div></button>
+  </div>
+  <div class="control-section"><div class="followup-toolbar"><input id="followupSearch" type="search" placeholder="Cari instansi, Batch ID, atau pelayanan..." oninput="renderFollowupQueue()"><button class="btn btn-secondary" onclick="document.getElementById('followupSearch').value='';renderFollowupQueue()">Reset</button></div><div class="ops-table-wrap"><table class="ops-table"><thead><tr><th>Instansi</th><th>Detail</th><th>Status / kebutuhan</th><th>Aksi</th></tr></thead><tbody id="followupQueueBody"><tr><td colspan="4">Memuat...</td></tr></tbody></table></div></div>
+</section>
 
 <section id="internalLanding" class="internal-landing hidden">
     <div class="internal-landing-head">
       <div>
-        <h2>Jadwal breakout room konsultasi</h2>
-        <p>Ringkasan seluruh sesi aktif. Setiap breakout room maksimal 4 instansi.</p>
+        <h2>Jadwal konsultasi</h2>
+        <p>Pantau posisi sesi berjalan, sesi berikutnya, serta distribusi instansi pada setiap breakout room.</p>
       </div>
       <button class="btn btn-secondary" onclick="loadInternalSchedule()">Refresh jadwal</button>
     </div>
@@ -1191,28 +1319,20 @@ tbody tr:last-child td{border-bottom:0}.log-cancelled{opacity:.38;background:#fa
           <span>Gunakan halaman ini sebagai alat kerja saat mendampingi instansi. Tidak ada proses kirim klarifikasi dari sisi internal.</span>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn btn-secondary" onclick="switchInternalPage('schedule')">Kembali ke jadwal</button>
+          <button class="btn btn-secondary" onclick="switchInternalPage('followup')">Kembali ke tindak lanjut</button>
           <button class="btn btn-secondary" onclick="switchMode('institution')">Lihat sebagai instansi</button>
         </div>
       </div>
 
       <div class="internal-assist-summary">
-        <div class="assist-summary-item">
-          <div class="q-label">Status akses</div>
-          <div class="assist-value" id="iqAccess">—</div>
-        </div>
-        <div class="assist-summary-item">
-          <div class="q-label">Usulan aktif</div>
-          <div class="assist-value" id="iqActive">0</div>
-        </div>
-        <div class="assist-summary-item">
-          <div class="q-label">Status klarifikasi</div>
-          <div class="assist-value" id="iqSubmission">Belum dikirim</div>
-        </div>
-        <div class="assist-summary-item">
-          <div class="q-label">Konsultasi</div>
-          <div class="assist-value small" id="iqBooking">Belum dijadwalkan</div>
-        </div>
+        <div class="assist-summary-item"><div class="q-label">Status akses</div><div class="assist-value" id="iqAccess">—</div></div>
+        <div class="assist-summary-item"><div class="q-label">Usulan aktif</div><div class="assist-value" id="iqActive">0</div></div>
+        <div class="assist-summary-item"><div class="q-label">Penghapusan baru</div><div class="assist-value" id="iqNew">0</div></div>
+        <div class="assist-summary-item"><div class="q-label">Dibatalkan</div><div class="assist-value" id="iqCancelled">0</div></div>
+        <div class="assist-summary-item"><div class="q-label">Belum Diapprove PJ</div><div class="assist-value" id="iqPJPending">0</div></div>
+        <div class="assist-summary-item"><div class="q-label">Approval backend aktif</div><div class="assist-value" id="iqBackendActive">0</div></div>
+        <div class="assist-summary-item"><div class="q-label">Status klarifikasi</div><div class="assist-value small" id="iqSubmission">Belum dikirim</div></div>
+        <div class="assist-summary-item"><div class="q-label">Konsultasi</div><div class="assist-value small" id="iqBooking">Belum dijadwalkan</div></div>
       </div>
 
       <div class="internal-work-nav">
@@ -1452,8 +1572,10 @@ let bootstrapData = null;
 let config = {};
 let institutions = [];
 let mode = 'institution';
-let internalPage = 'schedule';
+let internalPage = 'dashboard';
 let internalWorkPage = 'summary';
+let internalDashboardData = null;
+let internalFollowupQueue = 'backend';
 let session = null;
 let sourceUploads = [];
 let booking = null;
@@ -1550,7 +1672,7 @@ let pendingInternalModeOpen = false;
 // -----------------------------------------------------------------------------
 
 async function apiGet(action, params = {}) {
-  const internalActions = new Set(['internalSession','internalSchedule','internalInstitution']);
+  const internalActions = new Set(['internalSession','internalDashboard','internalSchedule','internalInstitution']);
   const authParams = internalActions.has(action)
     ? { internalToken, browserSessionId }
     : {};
@@ -1800,7 +1922,7 @@ async function openInternalModeAfterAuth() {
   document.getElementById('leadText').textContent =
     'Tampilan kerja tim internal untuk memantau jadwal breakout dan mendampingi instansi.';
 
-  await switchInternalPage('schedule');
+  await switchInternalPage('dashboard');
 }
 
 
@@ -1865,6 +1987,8 @@ async function switchMode(next) {
   document.getElementById('leadText').textContent =
     'Portal untuk memantau data SKM yang tercatat melalui skm.go.id dalam rangka evaluasi Reformasi Birokrasi 2026.';
 
+  document.getElementById('internalDashboardPage').classList.add('hidden');
+  document.getElementById('internalFollowupPage').classList.add('hidden');
   document.getElementById('internalLanding').classList.add('hidden');
   document.getElementById('internalAssistancePage').classList.remove('hidden');
   document.getElementById('internalMode').classList.add('hidden');
@@ -1878,14 +2002,25 @@ async function switchMode(next) {
 
 async function switchInternalPage(page) {
   internalPage = page;
-  document.getElementById('internalScheduleTab').classList.toggle('active', page === 'schedule');
-  document.getElementById('internalAssistanceTab').classList.toggle('active', page === 'assistance');
-  document.getElementById('internalLanding').classList.toggle('hidden', page !== 'schedule');
-  document.getElementById('internalAssistancePage').classList.toggle('hidden', page !== 'assistance');
+  document.getElementById('internalDashboardTab')?.classList.toggle('active', page === 'dashboard');
+  document.getElementById('internalFollowupTab')?.classList.toggle('active', page === 'followup');
+  document.getElementById('internalScheduleTab')?.classList.toggle('active', page === 'schedule');
+  document.getElementById('internalAssistanceTab')?.classList.toggle('active', page === 'assistance');
+  document.getElementById('internalDashboardPage')?.classList.toggle('hidden', page !== 'dashboard');
+  document.getElementById('internalFollowupPage')?.classList.toggle('hidden', page !== 'followup');
+  document.getElementById('internalLanding')?.classList.toggle('hidden', page !== 'schedule');
+  document.getElementById('internalAssistancePage')?.classList.toggle('hidden', page !== 'assistance');
   document.getElementById('institutionMode')?.classList.add('hidden');
   document.getElementById('institutionPublicWorkspace')?.classList.add('hidden');
 
-  if (page === 'schedule') {
+  if (page === 'dashboard') {
+    document.getElementById('internalMode').classList.add('hidden');
+    await loadInternalDashboard(false);
+  } else if (page === 'followup') {
+    document.getElementById('internalMode').classList.add('hidden');
+    await loadInternalDashboard(false);
+    renderFollowupQueue();
+  } else if (page === 'schedule') {
     document.getElementById('internalMode').classList.add('hidden');
     await loadInternalSchedule();
   } else if (session) {
@@ -2424,6 +2559,7 @@ async function changeDecision(batchId, decision, actorType) {
       row.decision = data.decision;
       row.origin = data.origin;
     }
+    internalDashboardData = null;
     renderAll();
   } catch (err) {
     if (err.code === 'ACCESS_VIEW_ONLY') await reloadCurrentInstitution();
@@ -2467,6 +2603,7 @@ async function requestBackendApproval(batchId, button) {
       row.backendApprovalRequestedAt = result?.requestedAt || '';
     }
 
+    internalDashboardData = null;
     renderUploadTable('institution');
   } catch (err) {
     if (err.code === 'ACCESS_VIEW_ONLY' || err.code === 'PJ_ALREADY_APPROVED') {
@@ -2792,6 +2929,7 @@ async function submitClarification() {
     });
 
     await reloadCurrentInstitution(false);
+    internalDashboardData = null;
     alert('Klarifikasi berhasil dikirim.');
   } catch (err) {
     if (err.code === 'SESSION_FULL') {
@@ -2819,6 +2957,75 @@ async function reloadCurrentInstitution(showLoader = true) {
   } finally {
     if (showLoader) await hideLoading();
   }
+}
+
+
+// -----------------------------------------------------------------------------
+// INTERNAL DASHBOARD / FOLLOW-UP
+// -----------------------------------------------------------------------------
+async function loadInternalDashboard(force = false) {
+  if (internalDashboardData && !force) { renderInternalDashboard(); renderFollowupQueue(); return; }
+  showLoading('Memuat dashboard internal...', 'Ringkasan proses dan daftar tindak lanjut sedang disiapkan.');
+  try {
+    internalDashboardData = await apiGet('internalDashboard');
+    renderInternalDashboard(); renderFollowupQueue();
+  } catch (err) {
+    if (err.code === 'INTERNAL_AUTH_REQUIRED' || err.code === 'INTERNAL_SESSION_EXPIRED') {
+      internalToken = ''; sessionStorage.removeItem(INTERNAL_TOKEN_KEY); showInternalLogin();
+    } else showError(err.message);
+  } finally { await hideLoading(); }
+}
+
+function renderInternalDashboard() {
+  const data = internalDashboardData || {}; const s = data.summary || {};
+  const setText = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = fmt(value || 0); };
+  setText('dashMappingInstitutions', s.institutionsInMapping); setText('dashFinalDelete', s.finalActiveRequests);
+  setText('dashBackendActive', s.backendApprovalActive); setText('dashPJPending', s.pjPendingRows);
+  setText('dashOriginal', s.originalRequests); setText('dashOriginalActive', s.originalStillActive);
+  setText('dashCancelled', s.originalCancelled); setText('dashNew', s.newActiveRequests);
+  setText('dashClarFinal', s.clarificationUpToDate); setText('dashClarChanged', s.clarificationChangedAfterSubmit); setText('dashClarMissing', s.clarificationNotSubmitted);
+  const progress = Math.max(0, Math.min(100, Number(s.clarificationProgressPercent || 0)));
+  if (document.getElementById('dashProgressPercent')) document.getElementById('dashProgressPercent').textContent = `${progress}%`;
+  if (document.getElementById('dashProgressFill')) document.getElementById('dashProgressFill').style.width = `${progress}%`;
+  document.getElementById('queueCountBackend').textContent = fmt((data.queues?.backendApproval || []).length);
+  document.getElementById('queueCountChanged').textContent = fmt((data.queues?.clarificationChanged || []).length);
+  document.getElementById('queueCountNotSubmitted').textContent = fmt((data.queues?.clarificationNotSubmitted || []).length);
+  document.getElementById('queueCountPJPending').textContent = fmt((data.queues?.pjPending || []).length);
+
+  const priorityBody = document.getElementById('priorityInstitutionBody'); const priority = data.priorityInstitutions || [];
+  if (priorityBody) priorityBody.innerHTML = priority.length ? priority.slice(0,10).map(item => `<tr><td><div class="ops-name">${esc(item.institutionName)}</div><div class="ops-sub">${esc(item.clarificationStatus || '—')}</div></td><td>${renderIssueChips_(item.issues || [])}</td><td>${fmt(item.finalDeleteCount || 0)}</td><td><button class="btn btn-secondary" onclick="openInternalInstitutionById('${jsEsc(item.institutionId)}')">Buka</button></td></tr>`).join('') : '<tr><td colspan="4">Tidak ada instansi prioritas.</td></tr>';
+
+  const root = document.getElementById('globalActivityList'); const activity = data.recentActivity || [];
+  if (root) root.innerHTML = activity.length ? activity.map(a => `<div class="global-activity"><strong>${esc(activityLabel(a.action))} · ${esc(a.institutionName || '—')}</strong><span>${esc(a.timestamp || '—')}${a.batchId ? ` · Batch ID ${esc(a.batchId)}` : ''}${a.actorName ? ` · ${esc(a.actorName)}` : ''}</span></div>`).join('') : '<div class="queue-empty">Belum ada aktivitas.</div>';
+}
+
+function renderIssueChips_(issues) {
+  if (!issues?.length) return '<span class="issue-chip green">Tidak ada isu prioritas</span>';
+  return issues.map(issue => { const n = normalize(issue); let cls = ''; if (n.includes('berubah')) cls='danger'; else if (n.includes('approval backend')) cls='blue'; else if (n.includes('belum')) cls='warn'; else if (n.includes('final')) cls='green'; return `<span class="issue-chip ${cls}">${esc(issue)}</span>`; }).join('');
+}
+function openFollowupQueue(queue) { internalFollowupQueue = queue || 'backend'; switchInternalPage('followup'); }
+function setFollowupQueue(queue) {
+  internalFollowupQueue = queue; const map={backend:'queueCardBackend',changed:'queueCardChanged',notSubmitted:'queueCardNotSubmitted',pjPending:'queueCardPJPending'};
+  Object.values(map).forEach(id => document.getElementById(id)?.classList.remove('active')); document.getElementById(map[queue])?.classList.add('active'); renderFollowupQueue();
+}
+function getFollowupRows_() {
+  const q = internalDashboardData?.queues || {};
+  if (internalFollowupQueue === 'changed') return (q.clarificationChanged || []).map(x => ({institutionId:x.institutionId,institutionName:x.institutionName,search:`${x.institutionName}`,detail:`Klarifikasi terakhir ${x.submittedAt || '—'} · Revision ${x.submittedRevision} → ${x.currentRevision}`,status:`${fmt(x.activeDeleteCount || 0)} usulan aktif · ${fmt(x.newDeleteCount || 0)} baru · ${fmt(x.cancelledCount || 0)} dibatalkan`}));
+  if (internalFollowupQueue === 'notSubmitted') return (q.clarificationNotSubmitted || []).map(x => ({institutionId:x.institutionId,institutionName:x.institutionName,search:`${x.institutionName}`,detail:`${fmt(x.activeDeleteCount || 0)} usulan aktif · ${fmt(x.newDeleteCount || 0)} baru`,status:`Belum mengirim klarifikasi · ${fmt(x.pjPendingCount || 0)} Batch belum Diapprove PJ`}));
+  if (internalFollowupQueue === 'pjPending') return (q.pjPending || []).map(x => ({institutionId:x.institutionId,institutionName:x.institutionName,search:`${x.institutionName}`,detail:`${fmt(x.pjPendingCount || 0)} Batch belum Diapprove PJ`,status:`${fmt(x.backendApprovalActiveCount || 0)} approval backend aktif · ${esc(x.clarificationStatus || '—')}`}));
+  return (q.backendApproval || []).map(x => ({institutionId:x.institutionId,institutionName:x.institutionName,search:`${x.institutionName} ${x.batchId} ${x.service} ${x.level1} ${x.level2}`,detail:`Batch ID ${x.batchId} · ${x.service || 'Pelayanan tidak tersedia'}`,status:`${x.statusPJ || 'Belum Diapprove PJ'} · Diajukan ${x.requestedAt || '—'}`}));
+}
+function renderFollowupQueue() {
+  if (!internalDashboardData) return; const body=document.getElementById('followupQueueBody'); if (!body) return;
+  const query=normalize(document.getElementById('followupSearch')?.value || ''); let rows=getFollowupRows_();
+  if (query) rows=rows.filter(r => normalize(`${r.search} ${r.detail} ${r.status}`).includes(query));
+  if (!rows.length) { body.innerHTML='<tr><td colspan="4"><div class="queue-empty">Tidak ada item pada antrean ini.</div></td></tr>'; return; }
+  body.innerHTML=rows.map(r => `<tr><td><div class="ops-name">${esc(r.institutionName)}</div></td><td>${esc(r.detail)}</td><td>${r.status}</td><td><button class="btn btn-secondary" onclick="openInternalInstitutionById('${jsEsc(r.institutionId)}')">Buka instansi</button></td></tr>`).join('');
+}
+async function openInternalInstitutionById(institutionId) {
+  const inst=institutions.find(i => i.institutionId === institutionId); if (!inst) return showError('Instansi tidak ditemukan pada MASTER_INSTANSI.');
+  mode='internal'; document.getElementById('modeInstitution').classList.remove('active'); document.getElementById('modeInternal').classList.add('active'); document.getElementById('institutionInput').value=inst.name;
+  await switchInternalPage('assistance'); await loadSelectedInstitution();
 }
 
 // -----------------------------------------------------------------------------
@@ -2916,9 +3123,12 @@ function getInternalSessionTimingState_(data, now = new Date()) {
 }
 
 
+
 function renderInternalLandingSchedule() {
   const root = document.getElementById('internalLandingSchedule');
   if (!root) return;
+
+  renderDeletionMappingSummary_();
   if (!internalScheduleData?.dates?.length) {
     root.innerHTML = '<div class="empty"><strong>Belum ada jadwal aktif</strong>Atur JADWAL_KONSULTASI pada backend.</div>';
     return;
@@ -3076,12 +3286,16 @@ function renderInternal() {
   set('internalContextTitle', session.name);
   set('iqAccess', session.statusAkses || '—');
   set('iqActive', sourceUploads.filter(r => r.decision === 'ACTIVE').length);
-  set('iqSubmission', internalData?.clarificationHistory?.length ? 'Sudah dikirim' : 'Belum dikirim');
+  set('iqNew', sourceUploads.filter(r => r.origin === 'NEW' && r.decision === 'ACTIVE').length);
+  set('iqCancelled', sourceUploads.filter(r => r.decision === 'CANCELLED').length);
+  set('iqPJPending', sourceUploads.filter(r => isPjNotApprovedFront(r.statusPJ)).length);
+  set('iqBackendActive', sourceUploads.filter(r => r.backendApprovalRequested && isPjNotApprovedFront(r.statusPJ)).length);
+  set('iqSubmission', internalData?.clarificationState?.status || (internalData?.clarificationHistory?.length ? 'Sudah dikirim' : 'Belum dikirim'));
   set('iqBooking', currentBooking ? `${currentBooking.start}–${currentBooking.end} · BR ${currentBooking.room}` : 'Belum dijadwalkan');
   set('srcUploads', sourceUploads.length);
-  set('srcApproved', sourceUploads.filter(r => normalize(r.statusPJ) === 'disetujui seluruhnya').length);
-  set('srcPartial', sourceUploads.filter(r => normalize(r.statusPJ) === 'disetujui sebagian').length);
-  set('srcPending', sourceUploads.filter(r => normalize(r.statusPJ).includes('belum')).length);
+  set('srcApproved', sourceUploads.filter(r => normalize(r.statusPJ).includes('sudah diapprove') && normalize(r.statusPJ).includes('seluruhnya disetujui')).length);
+  set('srcPartial', sourceUploads.filter(r => normalize(r.statusPJ).includes('sudah diapprove') && normalize(r.statusPJ).includes('sebagian')).length);
+  set('srcPending', sourceUploads.filter(r => isPjNotApprovedFront(r.statusPJ)).length);
   set('srcRevision', config.sourceRevision || '—');
 
   let guide = '';
@@ -3091,6 +3305,13 @@ function renderInternal() {
   } else {
     guide = '<strong>Instansi hanya dapat melihat data.</strong> Gunakan log upload dan Status Penanggung Jawab untuk menjelaskan kondisi data. Jangan melakukan perubahan.';
   }
+  const clarState = internalData?.clarificationState?.status || '';
+  const backendActive = sourceUploads.filter(r => r.backendApprovalRequested && isPjNotApprovedFront(r.statusPJ)).length;
+  const pjPending = sourceUploads.filter(r => isPjNotApprovedFront(r.statusPJ)).length;
+  if (clarState === 'Ada perubahan setelah klarifikasi dikirim') guide += '<br><br><strong>Perlu perhatian:</strong> terdapat perubahan keputusan setelah klarifikasi terakhir dikirim. Minta instansi memastikan keputusan akhir dan mengirim klarifikasi kembali.';
+  else if (clarState === 'Belum dikirim') guide += '<br><br><strong>Perlu perhatian:</strong> instansi belum mengirim klarifikasi.';
+  if (backendActive > 0) guide += `<br><br><strong>Approval backend:</strong> ${fmt(backendActive)} Batch ID masih memiliki permintaan approval backend aktif.`;
+  else if (pjPending > 0) guide += `<br><br><strong>Status PJ:</strong> masih terdapat ${fmt(pjPending)} Batch ID yang belum Diapprove PJ.`;
   if (currentBooking) guide += `<br><br><strong>Konsultasi:</strong> ${esc(currentBooking.dateLabel)}, ${esc(currentBooking.start)}–${esc(currentBooking.end)} WIB · Breakout ${esc(currentBooking.room)}.`;
   document.getElementById('guidanceBox').innerHTML = guide;
 
@@ -3133,6 +3354,7 @@ async function saveInternalNote() {
       updatedBy: 'Tim Internal'
     });
     internalData.internalNote = { note:result.note, updatedAt:new Date().toLocaleString('id-ID'), updatedBy:result.updatedBy };
+    internalDashboardData = null;
     renderInternal();
   } catch (err) {
     if (err.code === 'INTERNAL_AUTH_REQUIRED' || err.code === 'INTERNAL_SESSION_EXPIRED') {
